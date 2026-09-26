@@ -17,7 +17,7 @@ def fetch_usd_price():
     try:
         response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
-        # گشتن دنبال تگ قیمت دلار تو سایت TGJU
+        # گشتن دنبال تگ قیمت دلار تو سایت صرافی تبدیل
         data = response.json()
 
         price_toman = float(data.get("USDT_IRT", {}).get("price", 0))
@@ -50,6 +50,8 @@ def main():
         
         # 📅 قالب‌بندی به تاریخ زیبای شمسی و ساعت تهران
         data['last_updated'] = now_in_tehran.strftime('%Y/%m/%d - %H:%M')
+
+        data['source'] = 'تبدیل (Tabdeal)'
         
         with open(DATA_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
