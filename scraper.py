@@ -7,7 +7,7 @@ Payment_page rate scraper
 - Writes stable JSON to data/rate.json:
   {
     "usd_irr": <int>,
-    "updated_at": "<ISO8601 Tehran offset>",
+    "updated_at": "<ISO8601, e.g. 2026-09-26T20:30:00+03:30>",
     "source": "TGJU"
   }
 - Safe/clean logs for GitHub Actions
@@ -46,19 +46,14 @@ def parse_int_from_any(raw) -> int:
         raise ValueError("rate value is None")
 
     s = str(raw).strip()
-
-    fa_digits = "۰۱۲۳۴۵۶۷۸۹"
-    en_digits = "0123456789"
-    trans = str.maketrans(fa_digits, en_digits)
-    s = s.translate(trans)
-
+    s = s.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789"))
     digits = re.sub(r"[^\d]", "", s)
     if not digits:
         raise ValueError(f"cannot parse integer from value: {raw!r}")
 
     value = int(digits)
     if value <= 0:
-      raise ValueError(f"parsed non-positive rate: {value}")
+        raise ValueError(f"parsed non-positive rate: {value}")
     return value
 
 
@@ -66,11 +61,11 @@ def extract_usd_irr(payload: dict) -> int:
     candidates = []
 
     try:
-        current = payload.get("current", {})
-        usd_obj = current.get("price_dollar_rl", {})
-        for key in ("p", "pf", "price", "value"):
-            if key in usd_obj:
-                candidates.append(usd_obj[key])
+        cur = payload.get("current", {})
+        usd_obj = cur.get("price_dollar_rl", {})
+        for k in ("p", "pf", "price", "value"):
+            if k in usd_obj:
+                candidates.append(usd_obj[k])
     except Exception:
         pass
 
@@ -125,7 +120,6 @@ def fetch_json(url: str, timeout: int = 25) -> dict:
         },
         method="GET",
     )
-
     with urlopen(req, timeout=timeout) as resp:
         charset = resp.headers.get_content_charset() or "utf-8"
         body = resp.read().decode(charset, errors="replace")
@@ -135,11 +129,9 @@ def fetch_json(url: str, timeout: int = 25) -> dict:
 def load_existing_rate(path: str):
     if not os.path.exists(path):
         return None
-
     try:
         with open(path, "r", encoding="utf-8") as f:
             old = json.load(f)
-
         old_rate = int(old.get("usd_irr", 0))
         return old_rate if old_rate > 0 else None
     except Exception:
@@ -153,7 +145,6 @@ def write_rate(path: str, usd_irr: int, source: str = SOURCE_NAME) -> None:
         "updated_at": now_tehran_iso(),
         "source": source,
     }
-
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")
@@ -161,7 +152,6 @@ def write_rate(path: str, usd_irr: int, source: str = SOURCE_NAME) -> None:
 
 def main() -> int:
     log("starting...")
-
     old_rate = load_existing_rate(OUTPUT_PATH)
     if old_rate:
         log(f"existing rate.json usd_irr={old_rate}")
