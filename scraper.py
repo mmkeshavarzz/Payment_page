@@ -5,6 +5,12 @@ import sys
 import os
 from datetime import datetime, timezone
 
+DATA_DIR = "data"
+RATE_PATH = os.path.join(DATA_DIR, "rate.json")
+CONFIG_PATH = os.path.join(DATA_DIR, "config.json")
+DEFAULT_FIXED_USD = 25
+
+
 def fetch_url(url, headers):
     """درخواست به سایت با هدر و timeout"""
     req = urllib.request.Request(url, headers=headers)
@@ -15,6 +21,7 @@ def fetch_url(url, headers):
             return status, content
     except Exception as e:
         return 500, str(e)
+
 
 def extract_price_from_html(html):
     """
@@ -35,13 +42,32 @@ def extract_price_from_html(html):
                 return int(price_str)
     return None
 
-def calc_smart_final(rate_irr, usd_amount=25):
+
+def calc_smart_final(rate_irr, usd_amount):
     """
     فرمول نهایی مطابق با index.html:
-    Math.floor((rate * 25) / 10000) * 10000 + 900
+    Math.floor((rate * usd) / 10000) * 10000 + 900
     """
     exact = rate_irr * usd_amount
     return (exact // 10000) * 10000 + 900
+
+
+def load_fixed_usd():
+    """
+    fixed_usd را از data/config.json می‌خواند.
+    اگر فایل نبود/نامعتبر بود، مقدار پیش‌فرض برمی‌گرداند.
+    """
+    if not os.path.exists(CONFIG_PATH):
+        return DEFAULT_FIXED_USD
+
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            cfg = json.load(f)
+        val = int(cfg.get("fixed_usd", DEFAULT_FIXED_USD))
+        return val if val > 0 else DEFAULT_FIXED_USD
+    except Exception:
+        return DEFAULT_FIXED_USD
+
 
 def main():
     url = "https://www.tgju.org/profile/price_dollar_rl"
@@ -53,6 +79,11 @@ def main():
         "Cache-Control": "no-cache",
         "Pragma": "no-cache"
     }
+
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+    fixed_usd = load_fixed_usd()
+    print(f"Using fixed_usd from config: {fixed_usd}")
 
     print(f"Fetching from: {url}")
     status, content = fetch_url(url, headers)
@@ -71,7 +102,7 @@ def main():
         print(safe_content[:1000])
         sys.exit(1)
 
-    final_amount = calc_smart_final(price_rial, 25)
+    final_amount = calc_smart_final(price_rial, fixed_usd)
 
     output_data = {
         "usd_irr": price_rial,
@@ -80,14 +111,12 @@ def main():
         "final_irr": final_amount
     }
 
-    data_path = os.path.join("data", "rate.json")
-    os.makedirs(os.path.dirname(data_path), exist_ok=True)
-
-    with open(data_path, "w", encoding="utf-8") as f:
+    with open(RATE_PATH, "w", encoding="utf-8") as f:
         json.dump(output_data, f, ensure_ascii=False, indent=2)
 
     print("rate.json updated successfully")
     print(json.dumps(output_data, ensure_ascii=False, indent=2))
+
 
 if __name__ == "__main__":
     main()
