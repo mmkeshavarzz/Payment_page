@@ -6,6 +6,7 @@ on:
     - cron: "30 20 * * *"
   workflow_dispatch:
 
+# 🌟 این همون معجون جادوییه که اجازه میده ربات فایل رو ذخیره کنه!
 permissions:
   contents: write
 
