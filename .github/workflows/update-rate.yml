@@ -2,18 +2,18 @@ name: Update USD Rate (Tehran Midnight)
 
 on:
   schedule:
-    - cron: "30 20 * * *"   # 00:00 Tehran (UTC+3:30)
+    - cron: "30 20 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: update-rate-main
+  group: update-rate
   cancel-in-progress: false
 
 jobs:
-  update:
+  update-rate:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -21,18 +21,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Run scraper
-        run: python scraper.py
+        run: |
+          python --version
+          python scraper.py
 
-      - name: Commit updated rate
+      - name: Validate rate.json shape
+        run: |
+          test -f data/rate.json
+          python - << 'PY'
+          import json
+          with open('data/rate.json','r',encoding='utf-8') as f:
+              d = json.load(f)
+          assert isinstance(d.get('usd_irr'), int) and d['usd_irr'] > 0, "usd_irr invalid"
+          assert isinstance(d.get('updated_at'), str) and d['updated_at'].strip(), "updated_at missing"
+          assert isinstance(d.get('source'), str) and d['source'].strip(), "source missing"
+          print("rate.json OK:", d)
+          PY
+
+      - name: Commit & push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/rate.json
-          git diff --staged --quiet || git commit -m "chore: update usd rate"
+          git diff --staged --quiet || git commit -m "chore(rate): update daily USD rate"
           git push
