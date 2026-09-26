@@ -27,10 +27,7 @@
       --expired:#374151;--expired-text:#cbd5e1;--bar-bg:#3f0b0b;--bar-fill1:#ef4444;--bar-fill2:#f87171;--sk:#1f2937;
       --cardbox-bg:#0b254a;--cardbox-b:#1d4ed8;--cardbox-text:#dbeafe;--copy-bg:#1e40af;--copy-bg-hover:#1d4ed8;--copy-text:#eff6ff;
       --final-bg:linear-gradient(135deg,#052e16,#14532d);--final-text:#ecfccb;--final-k:#bbf7d0;
-      --amountbox-bg:#0b1f37;--amountbox-b:#1e3a8a;--amountbox-text:#dbeafe;
       --tap-bg:#1e3a8a;
-      --sticky-bg:rgba(10,16,32,.92);
-      --sticky-border:#334155;
     }
 
     html[data-theme="light"]{
@@ -38,10 +35,7 @@
       --expired:#d1d5db;--expired-text:#374151;--bar-bg:#fee2e2;--bar-fill1:#ef4444;--bar-fill2:#f87171;--sk:#ece7de;
       --cardbox-bg:#f8fbff;--cardbox-b:#dbeafe;--cardbox-text:#1e3a8a;--copy-bg:#2563eb;--copy-bg-hover:#1d4ed8;--copy-text:#ffffff;
       --final-bg:linear-gradient(135deg,#ecfdf3,#dcfce7);--final-text:#14532d;--final-k:#166534;
-      --amountbox-bg:#fffaf0;--amountbox-b:#f1e2c8;--amountbox-text:#7c2d12;
       --tap-bg:#eff6ff;
-      --sticky-bg:rgba(255,253,248,.95);
-      --sticky-border:#e8ddcc;
     }
 
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -97,18 +91,15 @@
 
     .final{
       border:1px solid #22c55e44;background:var(--final-bg);color:var(--final-text);
-      border-radius:var(--r-lg);padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;
+      border-radius:var(--r-lg);padding:14px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
       transition:filter var(--tr), opacity var(--tr)
     }
+    .final-main{display:grid;gap:6px;min-width:0}
     .final .k{font-size:12px;color:var(--final-k)}
     .final .v{font-size:30px;font-weight:900;line-height:1.1}
-
-    .amountbox{
-      border:1px solid var(--amountbox-b);background:var(--amountbox-bg);color:var(--amountbox-text);
-      border-radius:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
-    }
-    .amountbox .label{font-size:12px;opacity:.9}
-    .amountbox .num{font-size:18px;font-weight:900;direction:ltr;unicode-bidi:plaintext;word-break:break-word}
+    .final-actions{display:flex;align-items:center;gap:8px}
+    .final .copy-btn{white-space:nowrap}
 
     .valid{border:1px solid #ef444466;border-radius:var(--r-md);padding:10px;background:color-mix(in srgb, var(--bar-bg) 40%, transparent)}
     .valid-top{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#b91c1c;margin-bottom:8px;flex-wrap:wrap}
@@ -175,8 +166,6 @@
 
     .footer{text-align:center;font-size:11px;color:var(--muted);padding-top:2px}
 
-    .sticky-paybar{ display:none; }
-
     @media (max-width: 640px){
       body{padding:10px;align-items:flex-start}
       .wrap{max-width:100%}
@@ -185,26 +174,17 @@
       .title h1{font-size:18px}
       .title p{font-size:11px}
       .icon-btn{width:36px;height:36px}
-      .content{padding:12px;gap:10px;padding-bottom:84px;}
+      .content{padding:12px;gap:10px}
       .row{grid-template-columns:1fr}
       .mini .v{font-size:20px}
-      .final{padding:10px;flex-direction:column;align-items:flex-start}
+      .final{padding:12px;align-items:flex-start}
       .final .v{font-size:24px}
-      .amountbox,.cardbox,.meta,.valid{padding:10px}
-      .amountbox .num{font-size:17px}
+      .final-actions{width:100%}
+      .final .copy-btn{width:100%}
+      .cardbox,.meta,.valid{padding:10px}
       .cardbox .num{font-size:18px;letter-spacing:.8px}
       .copy-btn{width:100%;justify-content:center}
       .card-tap{width:100%}
-
-      .sticky-paybar{
-        position:fixed;left:0;right:0;bottom:0;z-index:999;
-        display:grid;grid-template-columns:1fr;gap:8px;
-        padding:10px calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));
-        background:var(--sticky-bg);
-        border-top:1px solid var(--sticky-border);
-        backdrop-filter:blur(8px);
-      }
-      .sticky-paybar .copy-btn{width:100%;margin:0;min-height:46px;font-size:14px}
     }
 
     @media (max-width: 380px){
@@ -212,7 +192,6 @@
       .mini .v{font-size:18px}
       .final .v{font-size:21px}
       .cardbox .num{font-size:16px;letter-spacing:.5px}
-      .amountbox .num{font-size:16px}
     }
   </style>
 </head>
@@ -253,16 +232,13 @@
         </section>
 
         <section class="final">
-          <div><div class="k">مبلغ نهایی قابل پرداخت</div></div>
-          <div id="finalAmount" class="v skeleton">000000</div>
-        </section>
-
-        <section class="amountbox">
-          <div>
-            <div class="label">کپی مبلغ نهایی (ریال)</div>
-            <div id="copyableAmount" class="num">—</div>
+          <div class="final-main">
+            <div class="k">مبلغ نهایی قابل پرداخت</div>
+            <div id="finalAmount" class="v skeleton">000000</div>
           </div>
-          <button id="copyAmountBtn" class="copy-btn" type="button">کپی مبلغ</button>
+          <div class="final-actions">
+            <button id="copyAmountBtn" class="copy-btn" type="button">کپی مبلغ</button>
+          </div>
         </section>
 
         <section class="valid">
@@ -296,10 +272,6 @@
     </section>
   </main>
 
-  <div class="sticky-paybar" id="stickyPaybar">
-    <button id="copyAmountBtnSticky" class="copy-btn" type="button">کپی مبلغ</button>
-  </div>
-
   <script>
     const DEFAULT_FIXED_USD = 25;
     const IRAN_TZ = 'Asia/Tehran';
@@ -309,9 +281,7 @@
     const usdAmountEl = document.getElementById('usdAmount');
     const usdRateEl = document.getElementById('usdRate');
     const finalAmountEl = document.getElementById('finalAmount');
-    const copyableAmountEl = document.getElementById('copyableAmount');
     const copyAmountBtnEl = document.getElementById('copyAmountBtn');
-    const copyAmountBtnStickyEl = document.getElementById('copyAmountBtnSticky');
 
     const updatedAtEl = document.getElementById('updatedAt');
     const sourceNameEl = document.getElementById('sourceName');
@@ -343,6 +313,23 @@
 
     function getRawCardNumber(){
       return (cardNumberEl.textContent || '').replace(/\D/g,'').slice(0,16);
+    }
+
+    function formatJalaliDate(value){
+      if(!value) return 'نامشخص';
+      const d = new Date(value);
+      if(Number.isNaN(d.getTime())) return value;
+
+      return new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+        year:'numeric',
+        month:'2-digit',
+        day:'2-digit',
+        hour:'2-digit',
+        minute:'2-digit',
+        second:'2-digit',
+        hourCycle:'h23',
+        timeZone: IRAN_TZ
+      }).format(d);
     }
 
     async function copyCardRaw(){
@@ -400,7 +387,6 @@
       };
     }
 
-    // Tehran local 00:00 => UTC ms
     function tehranMidnightUtcMs(y, m, d){
       return Date.UTC(y, m - 1, d, 0, 0, 0, 0) - (IRAN_OFFSET_MIN * 60 * 1000);
     }
@@ -477,9 +463,8 @@
 
         usdRateEl.textContent = fmt(rate);
         finalAmountEl.textContent = fmt(final) + ' ریال';
-        copyableAmountEl.textContent = fmt(final);
 
-        updatedAtEl.textContent = data.updated_at || 'نامشخص';
+        updatedAtEl.textContent = formatJalaliDate(data.updated_at);
         sourceNameEl.textContent = data.source || 'TGJU';
 
         const now = Date.now();
@@ -491,7 +476,6 @@
         showError('دریافت نرخ با مشکل مواجه شد. لطفاً کمی بعد دوباره تلاش کنید.');
         usdRateEl.textContent = '—';
         finalAmountEl.textContent = 'خطا';
-        copyableAmountEl.textContent = '—';
         currentFinalIrr = 0;
         updatedAtEl.textContent = 'نامشخص';
         sourceNameEl.textContent = 'TGJU';
@@ -526,7 +510,6 @@
     }
 
     copyAmountBtnEl.addEventListener('click', () => copyAmountRaw(copyAmountBtnEl));
-    copyAmountBtnStickyEl.addEventListener('click', () => copyAmountRaw(copyAmountBtnStickyEl));
 
     pngBtnEl.addEventListener('click', () => {
       const w = captureAreaEl.offsetWidth;
@@ -547,7 +530,8 @@
         URL.revokeObjectURL(url);
         const a = document.createElement('a');
         a.href = c.toDataURL('image/png');
-        a.download = 'payment-minimal-ultra.png';
+        a.downloadimage/png');
+        a.download.png';
         a.click();
       };
       img.onerror = () => URL.revokeObjectURL(url);
