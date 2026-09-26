@@ -92,7 +92,7 @@ def write_rate(path, usd_irr):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     data = {
         "usd_irr": int(usd_irr),
-        "updated_at": now_tehran_iso(),   # 👈 همیشه نوشته میشه
+        "updated_at": now_tehran_iso(),
         "source": "TGJU"
     }
     with open(path, "w", encoding="utf-8") as f:
