@@ -2,7 +2,7 @@ name: Update USD Rate JSON
 
 on:
   schedule:
-    - cron: "0 * * * *"   # هر ۱ ساعت (UTC)
+    - cron: "0 0 * * *"   # هر 24 ساعت (UTC)
   workflow_dispatch:
 
 permissions:
