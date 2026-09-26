@@ -13,10 +13,8 @@ OUTPUT_PATH = os.path.join("data", "rate.json")
 TGJU_URL = "https://api.tgju.org/v1/widget/tmp?keys=price_dollar_rl"
 TEHRAN_TZ = timezone(timedelta(hours=3, minutes=30))
 
-
 def now_tehran_iso():
     return datetime.now(TEHRAN_TZ).isoformat(timespec="seconds")
-
 
 def parse_int_from_any(raw):
     s = str(raw).strip()
@@ -29,17 +27,16 @@ def parse_int_from_any(raw):
         raise ValueError(f"rate must be positive, got {v}")
     return v
 
-
 def extract_usd_irr(payload):
     candidates = []
 
     cur = payload.get("current", {})
     if isinstance(cur, dict):
-      usd = cur.get("price_dollar_rl", {})
-      if isinstance(usd, dict):
-          for k in ("p", "pf", "price", "value"):
-              if k in usd:
-                  candidates.append(usd[k])
+        usd = cur.get("price_dollar_rl", {})
+        if isinstance(usd, dict):
+            for k in ("p", "pf", "price", "value"):
+                if k in usd:
+                    candidates.append(usd[k])
 
     paths = [
         ("price_dollar_rl", "p"),
@@ -70,7 +67,6 @@ def extract_usd_irr(payload):
 
     raise ValueError("USD/IRR not found in payload")
 
-
 def fetch_json(url, timeout=25):
     req = Request(
         url,
@@ -84,9 +80,8 @@ def fetch_json(url, timeout=25):
         charset = resp.headers.get_content_charset() or "utf-8"
         return json.loads(resp.read().decode(charset, errors="replace"))
 
-
 def write_rate(path, usd_irr):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    os.makedirs(os.path.dirname(path), exist_ok=True)  # auto-create /data
     data = {
         "usd_irr": int(usd_irr),
         "updated_at": now_tehran_iso(),
@@ -95,7 +90,6 @@ def write_rate(path, usd_irr):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")
-
 
 def main():
     try:
@@ -110,7 +104,6 @@ def main():
     except Exception as e:
         print("error:", e)
         return 1
-
 
 if __name__ == "__main__":
     sys.exit(main())
