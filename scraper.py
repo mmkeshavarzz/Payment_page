@@ -5,16 +5,13 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timezone, timedelta
-from urllib.request import Request, urlopen
-from urllib.error import URLError, HTTPError
-
+from datetime import datetime, timezone, timedeltadef now_tehran_iso():
+    return datetime.now(TEHRAN_TZ).isoformat(🌟 مسیر طلایی که با بقیه هماهنگه
 OUTPUT_PATH = os.path.join("data", "rate.json")
 TEHRAN_TZ = timezone(timedelta(hours=3, minutes=30))
 
 
 def now_tehran_iso():
-    # مثل: 2026-09-26T20:30:00+03:30
     return datetime.now(TEHRAN_TZ).isoformat(timespec="seconds")
 
 
@@ -33,7 +30,6 @@ def parse_int_from_any(raw):
 def extract_usd_irr(payload):
     candidates = []
 
-    # ایمن کردن پردازش: اگر API لیست پرت کرد تو صورتمون، خطای AttributeError نگیریم!
     if isinstance(payload, list):
         payload_dict = {"items": payload}
     elif isinstance(payload, dict):
@@ -72,13 +68,13 @@ def extract_usd_irr(payload):
         if ok:
             candidates.append(obj)
 
-    # 3. ساختار BRSAPI (لاستیک زاپاس!)
+    # 3. ساختار BRSAPI (لاستیک زاپاس)
     if "currency" in payload_dict and isinstance(payload_dict["currency"], list):
         for item in payload_dict["currency"]:
             if isinstance(item, dict) and item.get("name") == "دلار":
                 candidates.append(item.get("price"))
 
-    # 4. جستجوی عمیق: مثل یک کارآگاه تمام سوراخ‌سنبه‌ها رو می‌گردیم
+    # 4. جستجوی عمیق و کارآگاهی
     def deep_search(data):
         if isinstance(data, dict):
             if "price_dollar_rl" in data:
@@ -97,11 +93,9 @@ def extract_usd_irr(payload):
 
     deep_search(payload)
 
-    # تست و تایید قیمت‌های پیدا شده
     for c in candidates:
         try:
             v = parse_int_from_any(c)
-            # قیمت دلار در ایران قطعاً بیشتر از 100,000 ریاله دیگه! 😅
             if v > 100000:
                 return v
         except Exception:
@@ -111,7 +105,7 @@ def extract_usd_irr(payload):
 
 
 def fetch_json(url, timeout=25):
-    # تغییر لباس ربات به مرورگر کروم واقعی تا بادیگاردهای کلودفلر بلاکش نکنند
+    # 🌟 لباس مبدل مرورگر برای دور زدن بادیگاردهای کلودفلر
     req = Request(
         url,
         headers={
@@ -133,7 +127,7 @@ def write_rate(path, usd_irr, source="TGJU"):
         "updated_at": now_tehran_iso(),
         "source": source
     }
-      with open("data/rate.json", "w", encoding="utf-8") as f:
+    with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
