@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Run scraper
+      - name: Run scraper (auto-create data/rate.json)
         run: |
           python --version
           python scraper.py
