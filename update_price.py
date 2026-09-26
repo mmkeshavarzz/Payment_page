@@ -8,7 +8,7 @@ import jdatetime
 DATA_FILE = 'data.json'
 
 def fetch_usd_price():
-    url = "https://www.tgju.org/"
+    url = "https://api.tabdeal.org/r/plots/currency/prices"
     # هدرها برای اینکه سایت فکر کنه ما یک انسان واقعی با مرورگر هستیم!
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
@@ -17,18 +17,19 @@ def fetch_usd_price():
     try:
         response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
-        soup = BeautifulSoup(response.text, 'html.parser')
-        
         # گشتن دنبال تگ قیمت دلار تو سایت TGJU
-        price_tag = soup.find('li', id='l-price_dollar_rl')
-        if price_tag:
-            price_str = price_tag.find('span', class_='info-price').text
-            # حذف ویرگول‌ها و تبدیل به عدد ریاضی
-            return int(price_str.replace(',', ''))
+        data = response.json()
+
+        price_toman = float(data.get("USDT_IRT", {}).get("price", 0))
+        if price_toman > 0:
+            
+            # تبدیل تومان به ریال تر و تمیز
+            return int(price_toman * 10)
         return None
     except Exception as e:
-        print(f"ارور در دزدی شبانه از TGJU: {e}")
+        print(f"ارور در دریافت قیمت از صرافی تبدیل: {e}")
         return None
+
 
 def main():
     new_price = fetch_usd_price()
