@@ -291,7 +291,7 @@
           <article class="mini">
             <div class="k">نرخ دلار</div>
             <div id="usdRate" class="v skeleton">000000</div>
-            <div class="u">تومان</div>
+            <div class="u">ریال</div>
           </article>
         </section>
 
@@ -304,7 +304,7 @@
 
         <section class="valid">
           <div class="valid-top">
-            <span>اعتبار نرخ</span>
+            <span>اعتبار نرخ تا آپدیت بعدی (UTC 00:00)</span>
             <span id="countdownText">—</span>
           </div>
           <div class="bar"><span id="countdownBar"></span></div>
@@ -328,7 +328,6 @@
 
   <script>
     const FIXED_USD = 25;
-    const VALIDITY_MS = 60 * 60 * 1000;
 
     const usdAmountEl = document.getElementById('usdAmount');
     const usdRateEl = document.getElementById('usdRate');
@@ -346,7 +345,8 @@
     const nf = new Intl.NumberFormat('fa-IR');
     const fmt = n => nf.format(Math.floor(n || 0));
 
-    let lastUpdatedMs = null;
+    let updateBaseMs = null;      // زمان مبنای آپدیت (updated_at)
+    let nextUpdateMs = null;      // زمان نوبت بعدی آپدیت روزانه در UTC
     let countdownTimer = null;
     let isExpired = false;
 
@@ -406,11 +406,21 @@
       return Number.isNaN(ms) ? null : ms;
     }
 
+    // اولین UTC 00:00 بعد از یک زمان مشخص
+    function getNextUtcMidnight(ms){
+      const d = new Date(ms);
+      const y = d.getUTCFullYear();
+      const m = d.getUTCMonth();
+      const day = d.getUTCDate();
+      // UTC midnight روز بعد
+      return Date.UTC(y, m, day + 1, 0, 0, 0, 0);
+    }
+
     function startCountdown(){
       if(countdownTimer) clearInterval(countdownTimer);
 
       const tick = () => {
-        if(!lastUpdatedMs){
+        if(!updateBaseMs || !nextUpdateMs || nextUpdateMs <= updateBaseMs){
           countdownTextEl.textContent = 'نامشخص';
           countdownBarEl.style.width = '100%';
           setExpiredState(false);
@@ -418,9 +428,9 @@
         }
 
         const now = Date.now();
-        const elapsed = now - lastUpdatedMs;
-        const remain = Math.max(0, VALIDITY_MS - elapsed);
-        const percent = Math.max(0, Math.min(100, (remain / VALIDITY_MS) * 100));
+        const total = nextUpdateMs - updateBaseMs;
+        const remain = Math.max(0, nextUpdateMs - now);
+        const percent = Math.max(0, Math.min(100, (remain / total) * 100));
         countdownBarEl.style.width = percent + '%';
 
         if(remain <= 0){
@@ -429,9 +439,10 @@
           return;
         }
 
-        const mm = Math.floor(remain / 60000);
+        const hh = Math.floor(remain / 3600000);
+        const mm = Math.floor((remain % 3600000) / 60000);
         const ss = Math.floor((remain % 60000) / 1000);
-        countdownTextEl.textContent = `${fmt(mm)}:${String(ss).padStart(2,'0')} دقیقه`;
+        countdownTextEl.textContent = `${fmt(hh)}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')} (ساعت:دقیقه:ثانیه)`;
         setExpiredState(false);
       };
 
@@ -456,12 +467,16 @@
         const final = calcSmartFinal(exact);
 
         usdRateEl.textContent = fmt(rate);
-        finalAmountEl.textContent = fmt(final) + ' تومان';
+        finalAmountEl.textContent = fmt(final) + ' ریال';
 
         updatedAtEl.textContent = data.updated_at || 'نامشخص';
         sourceNameEl.textContent = data.source || 'TGJU';
 
-        lastUpdatedMs = parseUpdatedAt(data.updated_at) || Date.now();
+        // مبنا: updated_at (اگر نبود/نامعتبر بود => اکنون)
+        updateBaseMs = parseUpdatedAt(data.updated_at) || Date.now();
+        // مقصد: اولین UTC 00:00 بعد از مبنا
+        nextUpdateMs = getNextUtcMidnight(updateBaseMs);
+
         startCountdown();
       }catch(err){
         console.error(err);
@@ -470,7 +485,11 @@
         finalAmountEl.textContent = 'خطا';
         updatedAtEl.textContent = 'نامشخص';
         sourceNameEl.textContent = 'TGJU';
-        lastUpdatedMs = Date.now();
+
+        // fallback: از همین الان تا UTC 00:00 بعدی
+        updateBaseMs = Date.now();
+        nextUpdateMs = getNextUtcMidnight(updateBaseMs);
+
         startCountdown();
       }finally{
         setLoading(false);
