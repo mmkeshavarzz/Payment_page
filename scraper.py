@@ -1,122 +1,116 @@
-import urllib.request
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import json
+import os
 import re
 import sys
-import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from urllib.request import Request, urlopen
+from urllib.error import URLError, HTTPError
 
-DATA_DIR = "data"
-RATE_PATH = os.path.join(DATA_DIR, "rate.json")
-CONFIG_PATH = os.path.join(DATA_DIR, "config.json")
-DEFAULT_FIXED_USD = 25
-
-
-def fetch_url(url, headers):
-    """درخواست به سایت با هدر و timeout"""
-    req = urllib.request.Request(url, headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=20) as response:
-            status = response.getcode()
-            content = response.read().decode("utf-8", errors="ignore")
-            return status, content
-    except Exception as e:
-        return 500, str(e)
+OUTPUT_PATH = os.path.join("data", "rate.json")
+TGJU_URL = "https://api.tgju.org/v1/widget/tmp?keys=price_dollar_rl"
+TEHRAN_TZ = timezone(timedelta(hours=3, minutes=30))
 
 
-def extract_price_from_html(html):
-    """
-    استخراج قیمت دلار از HTML سایت TGJU
-    خروجی: قیمت به ریال
-    """
-    patterns = [
-        r'data-col="info\.last_trade\.PDrCotVal"[^>]*>([\d,]+)',
-        r'<td[^>]*class="text-left"[^>]*>([\d,]+)</td>',
-        r'<span[^>]*class="value"[^>]*>([\d,]+)</span>'
+def now_tehran_iso():
+    return datetime.now(TEHRAN_TZ).isoformat(timespec="seconds")
+
+
+def parse_int_from_any(raw):
+    s = str(raw).strip()
+    s = s.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789"))
+    digits = re.sub(r"[^\d]", "", s)
+    if not digits:
+        raise ValueError(f"cannot parse int from {raw!r}")
+    v = int(digits)
+    if v <= 0:
+        raise ValueError(f"rate must be positive, got {v}")
+    return v
+
+
+def extract_usd_irr(payload):
+    candidates = []
+
+    cur = payload.get("current", {})
+    if isinstance(cur, dict):
+      usd = cur.get("price_dollar_rl", {})
+      if isinstance(usd, dict):
+          for k in ("p", "pf", "price", "value"):
+              if k in usd:
+                  candidates.append(usd[k])
+
+    paths = [
+        ("price_dollar_rl", "p"),
+        ("price_dollar_rl", "pf"),
+        ("price_dollar_rl", "price"),
+        ("price_dollar_rl",),
+        ("usd_irr",),
+        ("usd",),
+        ("price",),
     ]
+    for path in paths:
+        obj = payload
+        ok = True
+        for key in path:
+            if isinstance(obj, dict) and key in obj:
+                obj = obj[key]
+            else:
+                ok = False
+                break
+        if ok:
+            candidates.append(obj)
 
-    for pattern in patterns:
-        match = re.search(pattern, html)
-        if match:
-            price_str = match.group(1).replace(",", "").strip()
-            if price_str.isdigit():
-                return int(price_str)
-    return None
+    for c in candidates:
+        try:
+            return parse_int_from_any(c)
+        except Exception:
+            pass
+
+    raise ValueError("USD/IRR not found in payload")
 
 
-def calc_smart_final(rate_irr, usd_amount):
-    """
-    فرمول نهایی مطابق با index.html:
-    Math.floor((rate * usd) / 10000) * 10000 + 900
-    """
-    exact = rate_irr * usd_amount
-    return (exact // 10000) * 10000 + 900
+def fetch_json(url, timeout=25):
+    req = Request(
+        url,
+        headers={
+            "User-Agent": "Mozilla/5.0 (compatible; PaymentPageBot/1.0)",
+            "Accept": "application/json,text/plain,*/*",
+        },
+        method="GET",
+    )
+    with urlopen(req, timeout=timeout) as resp:
+        charset = resp.headers.get_content_charset() or "utf-8"
+        return json.loads(resp.read().decode(charset, errors="replace"))
 
 
-def load_fixed_usd():
-    """
-    fixed_usd را از data/config.json می‌خواند.
-    اگر فایل نبود/نامعتبر بود، مقدار پیش‌فرض برمی‌گرداند.
-    """
-    if not os.path.exists(CONFIG_PATH):
-        return DEFAULT_FIXED_USD
-
-    try:
-        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
-            cfg = json.load(f)
-        val = int(cfg.get("fixed_usd", DEFAULT_FIXED_USD))
-        return val if val > 0 else DEFAULT_FIXED_USD
-    except Exception:
-        return DEFAULT_FIXED_USD
+def write_rate(path, usd_irr):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    data = {
+        "usd_irr": int(usd_irr),
+        "updated_at": now_tehran_iso(),
+        "source": "TGJU"
+    }
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+        f.write("\n")
 
 
 def main():
-    url = "https://www.tgju.org/profile/price_dollar_rl"
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Language": "fa-IR,fa;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Cache-Control": "no-cache",
-        "Pragma": "no-cache"
-    }
-
-    os.makedirs(DATA_DIR, exist_ok=True)
-
-    fixed_usd = load_fixed_usd()
-    print(f"Using fixed_usd from config: {fixed_usd}")
-
-    print(f"Fetching from: {url}")
-    status, content = fetch_url(url, headers)
-    print(f"HTTP Status: {status}")
-
-    if status != 200:
-        print(f"ERROR: Site returned status {status}")
-        print(content[:500])
-        sys.exit(1)
-
-    price_rial = extract_price_from_html(content)
-
-    if not price_rial or price_rial <= 0:
-        print("ERROR: Could not extract dollar price from HTML.")
-        safe_content = content.replace("\n", " ")
-        print(safe_content[:1000])
-        sys.exit(1)
-
-    final_amount = calc_smart_final(price_rial, fixed_usd)
-
-    output_data = {
-        "usd_irr": price_rial,
-        "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC"),
-        "source": "TGJU",
-        "final_irr": final_amount
-    }
-
-    with open(RATE_PATH, "w", encoding="utf-8") as f:
-        json.dump(output_data, f, ensure_ascii=False, indent=2)
-
-    print("rate.json updated successfully")
-    print(json.dumps(output_data, ensure_ascii=False, indent=2))
+    try:
+        payload = fetch_json(TGJU_URL, timeout=25)
+        usd_irr = extract_usd_irr(payload)
+        write_rate(OUTPUT_PATH, usd_irr)
+        print("updated:", OUTPUT_PATH)
+        return 0
+    except (HTTPError, URLError, TimeoutError) as e:
+        print("network error:", e)
+        return 1
+    except Exception as e:
+        print("error:", e)
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
