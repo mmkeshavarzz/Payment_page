@@ -133,7 +133,7 @@ def write_rate(path, usd_irr, source="TGJU"):
         "updated_at": now_tehran_iso(),
         "source": source
     }
-    with open(path, "w", encoding="utf-8") as f:
+      with open("data/rate.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
