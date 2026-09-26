@@ -2,44 +2,32 @@ name: Update USD Rate JSON
 
 on:
   schedule:
-    - cron: "0 * * * *"   # هر یک ساعت (UTC)
-  workflow_dispatch:       # اجرای دستی از تب Actions
+    - cron: "0 * * * *"   # هر ۱ ساعت (UTC)
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  update-rate:
+  update:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Checkout repo
+      uses: actions/checkout@v4
 
-      - name: Fetch USD rate from TGJU
-        id: fetch
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run scraper
         run: |
-          set -e
-          RAW=$(curl -s "https://api.tgju.org/v1/widget/tmp?keys=usd")
-          PRICE=$(echo "$RAW" | grep -o '"p":"[0-9,]*"' | head -n1 | sed 's/"p":"//;s/"//;s/,//g')
-          if [ -z "$PRICE" ]; then
-            echo "Failed to parse usd price"
-            exit 1
-          fi
-          NOW=$(date -u +"%Y-%m-%d %H:%M:%S")
-          mkdir -p data
-          cat > data/rate.json <<EOF
-          {
-            "usd_irr": $PRICE,
-            "updated_at": "$NOW",
-            "source": "TGJU"
-          }
-          EOF
-          echo "price=$PRICE" >> $GITHUB_OUTPUT
+          python scraper.py
 
-      - name: Commit changes
+      - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/rate.json
-          git diff --cached --quiet || git commit -m "chore: update rate.json (USD=${{ steps.fetch.outputs.price }})"
+          git diff --cached --quiet || git commit -m "chore: auto-update rate.json"
           git push
