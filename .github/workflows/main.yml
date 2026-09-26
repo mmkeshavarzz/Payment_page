@@ -1,4 +1,4 @@
-name: TGJU Daily Scraper
+name: Tabdeal Daily Scraper
 
 on:
   schedule:
