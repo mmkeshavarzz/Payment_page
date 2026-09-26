@@ -1,4 +1,4 @@
-name: Tabdeal Daily Scraper
+name: Signal Daily Scraper
 
 on:
   schedule:
