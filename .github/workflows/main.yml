@@ -1,4 +1,4 @@
-name: Signal Daily Scraper
+name: TGJU Daily Scraper
 
 on:
   schedule:
