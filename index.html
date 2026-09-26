@@ -301,6 +301,7 @@
 
     async function loadConfig(){
       try{
+        // 🌟 مسیر بی‌نقص شده!
         const res = await fetch('./data/config.json?ts=' + Date.now(), { cache:'no-store' });
         if(!res.ok) throw new Error();
         const cfg = await res.json();
@@ -314,6 +315,7 @@
       setLoading(true); hideError();
       try{
         await loadConfig();
+        // 🌟 مسیر بی‌نقص شده!
         const res = await fetch('./data/rate.json?ts=' + Date.now(), { cache:'no-store' });
         if(!res.ok) throw new Error('خطا در دریافت rate.json');
         const data = await res.json();
@@ -327,7 +329,6 @@
         updatedAtEl.textContent = formatJalaliDate(data.updated_at);
         sourceNameEl.textContent = data.source || 'TGJU';
 
-        // تغییر شماره ۲: زمان‌سنج بر اساس «آخرین بروزرسانی + 24 ساعت»
         const updatedMs = new Date(data.updated_at).getTime();
         if (!Number.isNaN(updatedMs)) {
           dayStartMs = updatedMs;
@@ -383,7 +384,7 @@
 
         const a = document.createElement('a');
         a.href = c.toDataURL('image/png');
-        a.download = 'payment-page.png'; // ✅ فیکس نهایی
+        a.download = 'payment-page.png';
         a.click();
       };
       img.onerror = () => URL.revokeObjectURL(url);
