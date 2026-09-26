@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>صفحه پرداخت | سیدمحمدمهدی کشاورز</title>
+    <!-- فونت زیبای وزیرمتن -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.0.0/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        :root {
+            /* تم کرمی روشن و صدفی */
+            --bg-body: #f4ece1; 
+            --bg-container: #faf6f0;
+            --text-main: #333333;
+            --text-muted: #777777;
+            --border-color: #e2dcd3;
+            --blue-btn: #3B82F6;
+            --blue-btn-hover: #2563EB;
+            --green-bg: #E8F5E9;
+            --green-text: #2E7D32;
+            --red-timer: #EF4444;
+            --blue-bank-bg: #F0F4F8;
+            --blue-bank-text: #1E293B;
+        }
+
+        * { box-sizing: border-box; font-family: 'Vazirmatn', sans-serif; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 90px; /* فضای خالی برای دکمه‌های استیکی موبایل */
+        }
+
+        .container {
+            background-color: var(--bg-container);
+            width: 100%;
+            max-width: 650px;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-color);
+        }
+
+        /* هدر شبیه عکس */
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; }
+        .header-titles { text-align: right; }
+        .header-titles h1 { font-size: 22px; font-weight: 800; color: #111; }
+        .header-titles p { font-size: 13px; color: var(--text-muted); margin-top: 5px; }
+        .header-icons span { background: white; border: 1px solid var(--border-color); border-radius: 10px; padding: 8px 12px; margin-right: 5px; cursor: pointer; display: inline-block; }
+
+        /* ردیف اول: باکس‌های بالا */
+        .top-cards { display: flex; gap: 15px; margin-bottom: 15px; }
+        .card-box { flex: 1; background: #fff; border: 1px solid var(--border-color); border-radius: 14px; padding: 20px; text-align: right; }
+        .card-box .label { font-size: 13px; color: var(--text-muted); margin-bottom: 10px; display: block; }
+        .card-box .value { font-size: 26px; font-weight: bold; }
+        .card-box .value small { font-size: 14px; font-weight: normal; color: var(--text-muted); }
+
+        /* ردیف دوم: باکس سبز نهایی */
+        .final-box { background-color: var(--green-bg); border-radius: 14px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border: 1px solid #C8E6C9; }
+        .final-info { text-align: right; }
+        .final-info .label { font-size: 14px; color: var(--green-text); display: block; margin-bottom: 5px; }
+        .final-info .value { font-size: 28px; font-weight: 900; color: var(--green-text); }
+        .final-info .value small { font-size: 14px; }
+
+        /* ردیف سوم: تایمر قرمز */
+        .timer-box { border: 1px solid #FCA5A5; background: #FEF2F2; border-radius: 14px; padding: 15px; margin-bottom: 15px; }
+        .timer-header { display: flex; justify-content: space-between; font-size: 13px; color: var(--red-timer); margin-bottom: 12px; font-weight: bold; }
+        .progress-bg { width: 100%; height: 8px; background: #FEE2E2; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--red-timer); width: 100%; transition: width 1s linear; }
+
+        /* ردیف چهارم: اطلاعات آپدیت */
+        .info-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-bottom: 25px; padding: 0 10px; }
+
+        /* ردیف پنجم: اطلاعات کارت بلوبانک */
+        .bank-box { background: var(--blue-bank-bg); border: 1px solid #CBD5E1; border-radius: 16px; padding: 25px; display: flex; justify-content: space-between; align-items: center; text-align: right; margin-bottom: 20px; }
+        .bank-details .bank-title { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+        .bank-details .owner { font-size: 15px; font-weight: bold; color: var(--blue-bank-text); margin-bottom: 12px; }
+        
+        /* شماره کارت قابل کلیک */
+        .card-number { 
+            font-size: 24px; font-weight: 900; color: var(--blue-btn); 
+            letter-spacing: 2px; direction: ltr; display: inline-block; 
+            cursor: pointer; padding: 8px 12px; background: rgba(59, 130, 246, 0.1); 
+            border-radius: 10px; transition: 0.2s; 
+        }
+        .card-number:active { transform: scale(0.95); background: rgba(59, 130, 246, 0.2); }
+
+        .footer-note { text-align: center; font-size: 12px; color: var(--text-muted); }
+
+        /* دکمه‌های دسکتاپ (داخل باکس‌ها) */
+        .btn { background: var(--blue-btn); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn:hover { background: var(--blue-btn-hover); }
+        .desktop-btn { display: block; }
+
+        /* دکمه‌های استیکی موبایل (مخفی در دسکتاپ) */
+        .mobile-sticky-actions { display: none; }
+
+        /* پیغام پاپ‌آپ (Toast) */
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 12px; padding: 16px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 16px; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
+
+        /* ریسپانسیو و دکمه‌های استیکی موبایل */
+        @media (max-width: 650px) {
+            .final-box, .bank-box { flex-direction: column; text-align: center; gap: 15px; }
+            .final-info, .bank-details { text-align: center; }
+            .desktop-btn { display: none; /* مخفی کردن دکمه‌های داخل باکس در موبایل */ }
+            
+            /* نوار چسبان پایین موبایل */
+            .mobile-sticky-actions {
+                display: flex; gap: 10px; position: fixed; bottom: 0; left: 0; right: 0;
+                background: rgba(250, 246, 240, 0.95); backdrop-filter: blur(10px);
+                padding: 15px; box-shadow: 0 -5px 20px rgba(0,0,0,0.1); border-top: 1px solid var(--border-color);
+                z-index: 100;
+            }
+            .mobile-sticky-actions button { flex: 1; padding: 16px; font-size: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="header-icons">
+                <span>🌓</span> <span>⬇️</span>
+            </div>
+            <div class="header-titles">
+                <h1>صفحه پرداخت</h1>
+                <p>نمایش خلاصه و شفاف برای پرداخت سریع</p>
+            </div>
+        </header>
+
+        <div class="top-cards">
+            <div class="card-box">
+                <span class="label">نرخ دلار</span>
+                <div class="value"><span id="rate-val">--</span> <small>ریال</small></div>
+            </div>
+            <div class="card-box">
+                <span class="label">مبلغ سفارش</span>
+                <div class="value"><span id="usd-val">--</span> <small>دلار</small></div>
+            </div>
+        </div>
+
+        <div class="final-box">
+            <button class="btn desktop-btn" onclick="copyAmount()">کپی مبلغ</button>
+            <div class="final-info">
+                <span class="label">مبلغ نهایی قابل پرداخت</span>
+                <div class="value" id="final-irr-val">درحال محاسبه...</div>
+            </div>
+        </div>
+
+        <div class="timer-box">
+            <div class="timer-header">
+                <span id="time-left">--:--:--</span>
+                <span>اعتبار نرخ امروز</span>
+            </div>
+            <div class="progress-bg">
+                <div class="progress-fill" id="progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <span>منبع: TGJU</span>
+            <span id="last-update-text">بروزرسانی: --</span>
+        </div>
+
+        <div class="bank-box">
+            <button class="btn desktop-btn" onclick="copyCard()">کپی شماره کارت</button>
+            <div class="bank-details">
+                <div class="bank-title">شماره کارت بلوبانک (کارت‌به‌کارت)</div>
+                <div class="owner">👤 سیدمحمدمهدی کشاورز</div>
+                <!-- اینجا تپ کنه خودش کپی میشه -->
+                <div class="card-number" onclick="copyCard()">6219 8619 8109 3916</div>
+            </div>
+        </div>
+
+        <div class="footer-note">فعلاً پرداخت فقط از طریق کارت‌به‌کارت انجام می‌شود.</div>
+    </div>
+
+    <!-- دکمه‌های چسبان پایین مخصوص موبایل -->
+    <div class="mobile-sticky-actions">
+        <button class="btn" onclick="copyCard()">کپی شماره کارت</button>
+        <button class="btn" style="background: #10B981;" onclick="copyAmount()">کپی مبلغ</button>
+    </div>
+
+    <!-- پیغام شناور کپی شدن -->
+    <div id="toast">کپی شد! ✅</div>
+
+    <script>
+        let finalAmountRaw = 0; // مبلغ نهایی برای کپی کردن
+        const CARD_NUMBER_RAW = "6219861981093916"; // شماره بدون فاصله برای کلیپ‌بورد
+
+        function formatNum(num) { return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); }
+
+        // خواندن داده‌ها از فایل گیت‌هاب
+        async function fetchPrices() {
+            try {
+                const res = await fetch('data.json?t=' + new Date().getTime()); // جلوگیری از کش
+                const data = await res.json();
+                
+                const usd = data.usd_amount;
+                const rate = data.usd_to_irr_rate;
+
+                document.getElementById('usd-val').innerText = formatNum(usd);
+                
+                if (rate > 0) {
+                    document.getElementById('rate-val').innerText = formatNum(rate);
+                    finalAmountRaw = usd * rate;
+                    document.getElementById('final-irr-val').innerHTML = formatNum(finalAmountRaw) + " <small>ریال</small>";
+                } else {
+                    document.getElementById('rate-val').innerText = "--";
+                    document.getElementById('final-irr-val').innerText = "خطا در دریافت نرخ";
+                    document.getElementById('final-irr-val').style.color = "#EF4444";
+                }
+                
+                document.getElementById('last-update-text').innerText = "بروزرسانی: " + data.last_updated;
+            } catch (e) {
+                console.error("خطا در خواندن فایل json", e);
+                document.getElementById('final-irr-val').innerText = "خطای سرور";
+            }
+        }
+
+        // تایمر 24 ساعته (00:00 تا 00:00 وقت تهران)
+        function updateSoftTimer() {
+            const now = new Date();
+            // دریافت زمان فعلی به وقت تهران
+            const tehranTimeStr = now.toLocaleString("en-US", {timeZone: "Asia/Tehran"});
+            const tehranTime = new Date(tehranTimeStr);
+
+            // محاسبه 00:00 روز بعد به وقت تهران
+            const midnight = new Date(tehranTime);
+            midnight.setHours(24, 0, 0, 0);
+
+            const totalMs = 24 * 60 * 60 * 1000; // کل میلی‌ثانیه‌های یک روز
+            const diffMs = midnight - tehranTime;
+
+            // تبدیل به درصد برای نوار قرمز (از 100٪ به سمت 0٪ نرم حرکت میکنه)
+            const percentage = (diffMs / totalMs) * 100;
+            document.getElementById('progress-fill').style.width = percentage + '%';
+
+            // ساعت و دقیقه
+            const h = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((diffMs % (1000 * 60)) / 1000);
+
+            document.getElementById('time-left').innerText = 
+                `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // توابع کپی با افکت پاپ‌آپ
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.innerText = msg;
+            t.className = "show";
+            setTimeout(() => { t.className = t.className.replace("show", ""); }, 2500);
+        }
+
+        function copyCard() {
+            navigator.clipboard.writeText(CARD_NUMBER_RAW).then(() => {
+                showToast("شماره کارت کپی شد! 💳");
+            }).catch(() => showToast("خطا در کپی! خودتان دستی کپی کنید."));
+        }
+
+        function copyAmount() {
+            if (finalAmountRaw > 0) {
+                navigator.clipboard.writeText(finalAmountRaw.toString()).then(() => {
+                    showToast("مبلغ قابل پرداخت کپی شد! 💰");
+                });
+            } else {
+                showToast("ابتدا صبر کنید مبلغ محاسبه شود!");
+            }
+        }
+
+        // شروع کار اسکریپت
+        fetchPrices();
+        updateSoftTimer();
+        setInterval(updateSoftTimer, 1000); // هر ثانیه تایمر رو نرم آپدیت کن
+    </script>
+
+</body>
+</html>
