@@ -1,18 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Payment_page rate scraper
-- Fetches USD/IRR from TGJU API endpoint
-- Writes stable JSON to data/rate.json:
-  {
-    "usd_irr": <int>,
-    "updated_at": "<ISO8601, e.g. 2026-09-26T20:30:00+03:30>",
-    "source": "TGJU"
-  }
-- Safe/clean logs for GitHub Actions
-"""
-
 import json
 import os
 import re
@@ -22,54 +10,41 @@ from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
 
 OUTPUT_PATH = os.path.join("data", "rate.json")
-SOURCE_NAME = "TGJU"
 TGJU_URL = "https://api.tgju.org/v1/widget/tmp?keys=price_dollar_rl"
 TEHRAN_TZ = timezone(timedelta(hours=3, minutes=30))
 
 
-def log(msg: str) -> None:
-    print(f"[scraper] {msg}", flush=True)
-
-
-def now_tehran_iso() -> str:
+def now_tehran_iso():
+    # مثل: 2026-09-26T20:30:00+03:30
     return datetime.now(TEHRAN_TZ).isoformat(timespec="seconds")
 
 
-def ensure_parent_dir(path: str) -> None:
-    parent = os.path.dirname(path)
-    if parent and not os.path.exists(parent):
-        os.makedirs(parent, exist_ok=True)
-
-
-def parse_int_from_any(raw) -> int:
-    if raw is None:
-        raise ValueError("rate value is None")
-
+def parse_int_from_any(raw):
     s = str(raw).strip()
     s = s.translate(str.maketrans("۰۱۲۳۴۵۶۷۸۹", "0123456789"))
     digits = re.sub(r"[^\d]", "", s)
     if not digits:
-        raise ValueError(f"cannot parse integer from value: {raw!r}")
+        raise ValueError(f"cannot parse int from {raw!r}")
+    v = int(digits)
+    if v <= 0:
+        raise ValueError(f"rate must be positive, got {v}")
+    return v
 
-    value = int(digits)
-    if value <= 0:
-        raise ValueError(f"parsed non-positive rate: {value}")
-    return value
 
-
-def extract_usd_irr(payload: dict) -> int:
+def extract_usd_irr(payload):
     candidates = []
 
-    try:
-        cur = payload.get("current", {})
-        usd_obj = cur.get("price_dollar_rl", {})
-        for k in ("p", "pf", "price", "value"):
-            if k in usd_obj:
-                candidates.append(usd_obj[k])
-    except Exception:
-        pass
+    # ساختار رایج TGJU
+    cur = payload.get("current", {})
+    if isinstance(cur, dict):
+        usd = cur.get("price_dollar_rl", {})
+        if isinstance(usd, dict):
+            for k in ("p", "pf", "price", "value"):
+                if k in usd:
+                    candidates.append(usd[k])
 
-    for path in [
+    # ساختارهای جایگزین
+    paths = [
         ("price_dollar_rl", "p"),
         ("price_dollar_rl", "pf"),
         ("price_dollar_rl", "price"),
@@ -77,7 +52,8 @@ def extract_usd_irr(payload: dict) -> int:
         ("usd_irr",),
         ("usd",),
         ("price",),
-    ]:
+    ]
+    for path in paths:
         obj = payload
         ok = True
         for key in path:
@@ -89,93 +65,54 @@ def extract_usd_irr(payload: dict) -> int:
         if ok:
             candidates.append(obj)
 
-    def walk(o):
-        if isinstance(o, dict):
-            for k, v in o.items():
-                lk = str(k).lower()
-                if ("dollar" in lk or "usd" in lk) and isinstance(v, (str, int, float)):
-                    candidates.append(v)
-                walk(v)
-        elif isinstance(o, list):
-            for item in o:
-                walk(item)
-
-    walk(payload)
-
     for c in candidates:
         try:
             return parse_int_from_any(c)
         except Exception:
-            continue
+            pass
 
-    raise ValueError("USD/IRR not found in TGJU payload")
+    raise ValueError("USD/IRR not found in payload")
 
 
-def fetch_json(url: str, timeout: int = 25) -> dict:
+def fetch_json(url, timeout=25):
     req = Request(
         url,
         headers={
-            "User-Agent": "Mozilla/5.0 (compatible; PaymentPageBot/1.0; +https://github.com/)",
+            "User-Agent": "Mozilla/5.0 (compatible; PaymentPageBot/1.0)",
             "Accept": "application/json,text/plain,*/*",
         },
         method="GET",
     )
     with urlopen(req, timeout=timeout) as resp:
         charset = resp.headers.get_content_charset() or "utf-8"
-        body = resp.read().decode(charset, errors="replace")
-        return json.loads(body)
+        return json.loads(resp.read().decode(charset, errors="replace"))
 
 
-def load_existing_rate(path: str):
-    if not os.path.exists(path):
-        return None
-    try:
-        with open(path, "r", encoding="utf-8") as f:
-            old = json.load(f)
-        old_rate = int(old.get("usd_irr", 0))
-        return old_rate if old_rate > 0 else None
-    except Exception:
-        return None
-
-
-def write_rate(path: str, usd_irr: int, source: str = SOURCE_NAME) -> None:
-    ensure_parent_dir(path)
+def write_rate(path, usd_irr):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     data = {
         "usd_irr": int(usd_irr),
-        "updated_at": now_tehran_iso(),
-        "source": source,
+        "updated_at": now_tehran_iso(),   # 👈 همیشه نوشته میشه
+        "source": "TGJU"
     }
     with open(path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
         f.write("\n")
 
 
-def main() -> int:
-    log("starting...")
-    old_rate = load_existing_rate(OUTPUT_PATH)
-    if old_rate:
-        log(f"existing rate.json usd_irr={old_rate}")
-
+def main():
     try:
         payload = fetch_json(TGJU_URL, timeout=25)
         usd_irr = extract_usd_irr(payload)
-        write_rate(OUTPUT_PATH, usd_irr, SOURCE_NAME)
-        log(f"success: usd_irr={usd_irr} -> {OUTPUT_PATH}")
+        write_rate(OUTPUT_PATH, usd_irr)
+        print("updated:", OUTPUT_PATH)
         return 0
-
     except (HTTPError, URLError, TimeoutError) as e:
-        log(f"network error: {e!r}")
-    except json.JSONDecodeError as e:
-        log(f"json decode error: {e!r}")
+        print("network error:", e)
+        return 1
     except Exception as e:
-        log(f"unexpected error: {e!r}")
-
-    if old_rate:
-        log("fallback: keeping existing rate.json (no overwrite)")
-        return 0
-
-    log("fatal: no previous valid rate.json found")
-    return 1
+        print("error:", e)
+        return 1
 
 
 if __name__ == "__main__":
