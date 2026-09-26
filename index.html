@@ -327,8 +327,16 @@
         updatedAtEl.textContent = formatJalaliDate(data.updated_at);
         sourceNameEl.textContent = data.source || 'TGJU';
 
-        const r = getIranDayRange(Date.now());
-        dayStartMs = r.start; dayEndMs = r.end;
+        // تغییر شماره ۲: زمان‌سنج بر اساس «آخرین بروزرسانی + 24 ساعت»
+        const updatedMs = new Date(data.updated_at).getTime();
+        if (!Number.isNaN(updatedMs)) {
+          dayStartMs = updatedMs;
+          dayEndMs = updatedMs + DAY_MS;
+          midnightRefreshDone = false;
+        } else {
+          const r = getIranDayRange(Date.now());
+          dayStartMs = r.start; dayEndMs = r.end;
+        }
       }catch(err){
         console.error(err);
         showError('دریافت نرخ با مشکل مواجه شد. لطفاً کمی بعد دوباره تلاش کنید.');
