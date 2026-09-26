@@ -1,0 +1,107 @@
+name: Update exchange rate
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-rate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Update rate.json
+        run: python scraper.py
+
+      - name: Commit updated rate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/rate.json
+
+          if git diff --cached --quiet; then
+            echo "No changes detected"
+          else
+            git commit -m "Update exchange rate"
+            git push
+          fi
+
+---
+
+# ۲. ذخیرهٔ نرخ به‌عنوان ریال
+
+فایل `scraper.py` باید مقدار دریافتی را به‌عنوان ریال ذخیره کند:
+
+python
+import json
+import re
+from datetime import datetime, timezone
+from pathlib import Path
+from urllib.request import Request, urlopen
+
+API_URL = "https://api.tgju.org/v1/widget/tmp?keys=usd"
+OUTPUT_FILE = Path("data/rate.json")
+
+request = Request(
+    API_URL,
+    headers={
+        "User-Agent": "Mozilla/5.0"
+    }
+)
+
+with urlopen(request, timeout=30) as response:
+    raw = response.read().decode("utf-8")
+
+match = re.search(r'"p"\s*:\s*"([0-9,]+)"', raw)
+
+if not match:
+    raise RuntimeError("USD price was not found")
+
+usd_irr = int(match.group(1).replace(",", ""))
+
+if usd_irr <= 0:
+    raise RuntimeError("Invalid USD rate")
+
+data = {
+    "usd_irr": usd_irr,
+    "updated_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+    "source": "TGJU",
+    "currency": "IRR"
+}
+
+OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+OUTPUT_FILE.write_text(
+    json.dumps(data, ensure_ascii=False, indent=2),
+    encoding="utf-8"
+)
+
+print(f"USD rate updated: {usd_irr} IRR")
+
+خروجی نمونه:
+
+json
+{
+  "usd_irr": 1050000,
+  "updated_at": "2026-09-26 00:00:00",
+  "source": "TGJU",
+  "currency": "IR00",
+  "source": "TGJU",
+  "currency": "IRهایی به ریال
+
+برای سفارش ثابت ۲۵ دلار:
+```js
+const exact = usd_irr * 25;
+const final_irr = Math.floor(exact / 10000) * 10000 + 900;
