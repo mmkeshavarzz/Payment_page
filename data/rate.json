@@ -1,6 +1,5 @@
 {
-  "usd_irr": 2335000,
-  "updated_at": "2026-09-26 14:16:44 UTC",
-  "source": "TGJU",
-  "final_irr": 58370900
+  "usd_irr": 123456,
+  "updated_at": "2026-09-26T20:30:00Z",
+  "source": "tgju"
 }
