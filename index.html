@@ -267,7 +267,7 @@
 
         <section class="valid">
           <div class="valid-top">
-            <span>اعتبار نرخ امروز (تایم ایران: 00:00 تا 00:00)</span>
+            <span>اعتبار نرخ امروز</span>
             <span id="countdownText">—</span>
           </div>
           <div class="bar"><span id="countdownBar"></span></div>
@@ -303,6 +303,7 @@
   <script>
     const DEFAULT_FIXED_USD = 25;
     const IRAN_TZ = 'Asia/Tehran';
+    const IRAN_OFFSET_MIN = 210; // +03:30
     const DAY_MS = 24 * 60 * 60 * 1000;
 
     const usdAmountEl = document.getElementById('usdAmount');
@@ -333,6 +334,7 @@
     let countdownTimer = null;
     let fixedUsd = DEFAULT_FIXED_USD;
     let currentFinalIrr = 0;
+    let midnightRefreshDone = false;
 
     function formatCardNumber(raw){
       const digits = String(raw || '').replace(/\D/g, '').slice(0,16);
@@ -386,54 +388,27 @@
 
     function calcSmartFinal(exact){ return Math.floor(exact / 10000) * 10000 + 900; }
 
-    function parseUpdatedAt(str){
-      if(!str || typeof str !== 'string') return null;
-      const normalized = str.replace(' ', 'T');
-      let ms = Date.parse(normalized);
-      if(!Number.isNaN(ms)) return ms;
-      const noTz = str.replace(/\s[A-Z]{2,5}$/, '');
-      ms = Date.parse(noTz.replace(' ','T'));
-      return Number.isNaN(ms) ? null : ms;
-    }
-
-    // ---- Time helpers for Iran day cycle (00:00 -> 00:00) ----
     function getTehranYMDParts(ms){
       const parts = new Intl.DateTimeFormat('en-CA', {
         timeZone: IRAN_TZ, year:'numeric', month:'2-digit', day:'2-digit'
       }).formatToParts(new Date(ms));
 
-      const y = Number(parts.find(p=>p.type==='year')?.value);
-      const m = Number(parts.find(p=>p.type==='month')?.value);
-      const d = Number(parts.find(p=>p.type==='day')?.value);
-      return { y, m, d };
+      return {
+        y: Number(parts.find(p => p.type === 'year')?.value),
+        m: Number(parts.find(p => p.type === 'month')?.value),
+        d: Number(parts.find(p => p.type === 'day')?.value),
+      };
     }
 
-    function tehranMidnightUtcMsFromYMD(y,m,d){
-      // guess UTC then iterate to exact Tehran local date 00:00
-      let t = Date.UTC(y, m-1, d, 0, 0, 0, 0);
-      for(let i=0;i<6;i++){
-        const dt = new Date(t);
-        const local = new Date(dt.toLocaleString('en-US', { timeZone: IRAN_TZ }));
-        const offset = local.getTime() - t;
-
-        // UTC moment that corresponds to Tehran 00:00 of that local day
-        const candidate = Date.UTC(y, m-1, d, 0, 0, 0, 0) - offset;
-        if (Math.abs(candidate - t) < 1) return candidate;
-        t = candidate;
-      }
-      return t;
+    // Tehran local 00:00 => UTC ms
+    function tehranMidnightUtcMs(y, m, d){
+      return Date.UTC(y, m - 1, d, 0, 0, 0, 0) - (IRAN_OFFSET_MIN * 60 * 1000);
     }
 
     function getIranDayRange(ms){
       const { y, m, d } = getTehranYMDParts(ms);
-      const start = tehranMidnightUtcMsFromYMD(y, m, d);
-
-      const nextDate = new Date(Date.UTC(y, m-1, d) + DAY_MS);
-      const ny = nextDate.getUTCFullYear();
-      const nm = nextDate.getUTCMonth() + 1;
-      const nd = nextDate.getUTCDate();
-      const end = tehranMidnightUtcMsFromYMD(ny, nm, nd);
-
+      const start = tehranMidnightUtcMs(y, m, d);
+      const end = start + DAY_MS;
       return { start, end };
     }
 
@@ -443,15 +418,14 @@
       const tick = () => {
         const now = Date.now();
 
-        // اگر از بازه خارج شدیم (مثلاً نیمه‌شب ایران رد شد) بازه جدید بساز
         if(!dayStartMs || !dayEndMs || now >= dayEndMs || now < dayStartMs){
           const r = getIranDayRange(now);
           dayStartMs = r.start;
           dayEndMs = r.end;
+          midnightRefreshDone = false;
         }
 
         const total = Math.max(1, dayEndMs - dayStartMs);
-        const elapsed = Math.max(0, now - dayStartMs);
         const remain = Math.max(0, dayEndMs - now);
 
         const percentLeft = Math.max(0, Math.min(100, (remain / total) * 100));
@@ -459,6 +433,10 @@
 
         if(remain <= 0){
           countdownTextEl.textContent = '۰۰:۰۰:۰۰';
+          if(!midnightRefreshDone){
+            midnightRefreshDone = true;
+            loadRate();
+          }
           return;
         }
 
@@ -504,12 +482,10 @@
         updatedAtEl.textContent = data.updated_at || 'نامشخص';
         sourceNameEl.textContent = data.source || 'TGJU';
 
-        // شمارشگر مستقل از updated_at، فقط بر اساس روز ایران
         const now = Date.now();
         const r = getIranDayRange(now);
         dayStartMs = r.start;
         dayEndMs = r.end;
-        startCountdown();
       }catch(err){
         console.error(err);
         showError('دریافت نرخ با مشکل مواجه شد. لطفاً کمی بعد دوباره تلاش کنید.');
@@ -519,12 +495,6 @@
         currentFinalIrr = 0;
         updatedAtEl.textContent = 'نامشخص';
         sourceNameEl.textContent = 'TGJU';
-
-        const now = Date.now();
-        const r = getIranDayRange(now);
-        dayStartMs = r.start;
-        dayEndMs = r.end;
-        startCountdown();
       }finally{
         setLoading(false);
       }
@@ -586,6 +556,7 @@
 
     initTheme();
     initCardFormat();
+    startCountdown();
     loadRate();
   </script>
 </body>
