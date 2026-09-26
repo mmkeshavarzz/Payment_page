@@ -1,74 +1,222 @@
 <!doctype html>
-<html lang="fa" dir="rtl" data-theme="dark">
+<html lang="fa" dir="rtl" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>صفحه پرداخت</title>
 
   <style>
     @font-face{
       font-family:'Yekan';
-      src:url('./assets/fonts/Yekan.woff2') format('woff2'),url('./assets/fonts/Yekan.woff') format('woff');
-      font-display:swap;font-weight:100 900;font-style:normal;
-    }
-    @font-face{
-      font-family:'Dana';
-      src:url('./assets/fonts/Dana.woff2') format('woff2'),url('./assets/fonts/Dana.woff') format('woff');
-      font-display:swap;font-weight:100 900;font-style:normal;
+      src:
+        url('./assets/fonts/Yekan.woff2') format('woff2'),
+        url('./assets/fonts/Yekan.woff') format('woff');
+      font-display:swap;
+      font-weight:normal;
+      font-style:normal;
     }
 
-    :root{--font-main:'Yekan','Dana',ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial;--r-xl:20px;--r-lg:14px;--r-md:10px;--tr:.22s ease;--danger:#ef4444;--ok:#22c55e}
-    html[data-theme="dark"]{--bg1:#0a1020;--bg2:#121a2d;--text:#e5e7eb;--muted:#94a3b8;--card:#0f172acc;--card-b:#3341558c;--soft:#11182799;--chip:#111827;--btn-text:#052e16;--pay-bg1:#22c55e;--pay-bg2:#4ade80;--expired:#374151;--expired-text:#cbd5e1;--bar-bg:#3f0b0b;--bar-fill1:#ef4444;--bar-fill2:#f87171;--sk:#1f2937}
-    html[data-theme="light"]{--bg1:#f5f7ff;--bg2:#eef2ff;--text:#0f172a;--muted:#475569;--card:#ffffffdb;--card-b:#cbd5e1cc;--soft:#f8fafc;--chip:#ffffff;--btn-text:#052e16;--pay-bg1:#22c55e;--pay-bg2:#4ade80;--expired:#cbd5e1;--expired-text:#334155;--bar-bg:#fee2e2;--bar-fill1:#ef4444;--bar-fill2:#f87171;--sk:#e2e8f0}
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;font-family:var(--font-main);color:var(--text);
-      background:radial-gradient(1000px 600px at 100% -10%, #3b82f61c 0%, transparent 60%),radial-gradient(900px 540px at -10% 120%, #8b5cf61a 0%, transparent 60%),linear-gradient(135deg,var(--bg1),var(--bg2));
-      display:flex;align-items:center;justify-content:center;padding:18px;transition:background var(--tr),color var(--tr);
+    :root{
+      --font-main:'Yekan','IRANYekan','YekanBakh','Vazirmatn',Tahoma,Arial,sans-serif;
+      --r-xl:20px;--r-lg:14px;--r-md:10px;--tr:.22s ease;
+      --danger:#ef4444;--ok:#22c55e;
     }
-    button,input,select,textarea{font-family:var(--font-main)}
+
+    html[data-theme="dark"]{
+      --bg1:#0a1020;--bg2:#121a2d;--text:#e5e7eb;--muted:#94a3b8;--card:#0f172acc;--card-b:#3341558c;--soft:#11182799;--chip:#111827;
+      --expired:#374151;--expired-text:#cbd5e1;--bar-bg:#3f0b0b;--bar-fill1:#ef4444;--bar-fill2:#f87171;--sk:#1f2937;
+      --cardbox-bg:#0b254a;--cardbox-b:#1d4ed8;--cardbox-text:#dbeafe;--copy-bg:#1e40af;--copy-bg-hover:#1d4ed8;--copy-text:#eff6ff;
+      --final-bg:linear-gradient(135deg,#052e16,#14532d);--final-text:#ecfccb;--final-k:#bbf7d0;
+      --amountbox-bg:#0b1f37;--amountbox-b:#1e3a8a;--amountbox-text:#dbeafe;
+      --tap-bg:#1e3a8a;
+      --sticky-bg:rgba(10,16,32,.92);
+      --sticky-border:#334155;
+    }
+
+    html[data-theme="light"]{
+      --bg1:#fffdf8;--bg2:#f7f2e9;--text:#1f2937;--muted:#6b7280;--card:#fffefbdd;--card-b:#e8ddcc;--soft:#fffaf0;--chip:#ffffff;
+      --expired:#d1d5db;--expired-text:#374151;--bar-bg:#fee2e2;--bar-fill1:#ef4444;--bar-fill2:#f87171;--sk:#ece7de;
+      --cardbox-bg:#f8fbff;--cardbox-b:#dbeafe;--cardbox-text:#1e3a8a;--copy-bg:#2563eb;--copy-bg-hover:#1d4ed8;--copy-text:#ffffff;
+      --final-bg:linear-gradient(135deg,#ecfdf3,#dcfce7);--final-text:#14532d;--final-k:#166534;
+      --amountbox-bg:#fffaf0;--amountbox-b:#f1e2c8;--amountbox-text:#7c2d12;
+      --tap-bg:#eff6ff;
+      --sticky-bg:rgba(255,253,248,.95);
+      --sticky-border:#e8ddcc;
+    }
+
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{
+      height:100%;
+      font-family:var(--font-main) !important;
+    }
+    body{
+      margin:0;color:var(--text);
+      background:
+        radial-gradient(1000px 600px at 100% -10%, #f59e0b14 0%, transparent 60%),
+        radial-gradient(900px 540px at -10% 120%, #3b82f614 0%, transparent 60%),
+        linear-gradient(135deg,var(--bg1),var(--bg2));
+      display:flex;align-items:center;justify-content:center;
+      padding:18px;
+      transition:background var(--tr),color var(--tr);
+    }
+
+    button,input,select,textarea{font-family:var(--font-main)!important}
     .wrap{width:100%;max-width:720px}
-    .card{background:var(--card);border:1px solid var(--card-b);border-radius:var(--r-xl);backdrop-filter: blur(10px);box-shadow:0 20px 60px rgba(2,6,23,.28);overflow:hidden;animation:fadeIn .35s ease}
+    .card{
+      background:var(--card);border:1px solid var(--card-b);border-radius:var(--r-xl);
+      backdrop-filter: blur(10px);box-shadow:0 20px 60px rgba(2,6,23,.14);
+      overflow:hidden;animation:fadeIn .35s ease
+    }
     @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .top{padding:14px;border-bottom:1px solid var(--card-b);display:flex;align-items:center;justify-content:space-between;gap:8px}
+
+    .top{
+      padding:14px;border-bottom:1px solid var(--card-b);
+      display:flex;align-items:center;justify-content:space-between;gap:8px
+    }
+
     .title{display:flex;flex-direction:column;gap:4px}
     .title h1{margin:0;font-size:20px;font-weight:900;letter-spacing:-.2px}
     .title p{margin:0;font-size:12px;color:var(--muted)}
+
     .actions{display:flex;gap:8px}
-    .icon-btn{border:1px solid var(--card-b);background:var(--chip);color:var(--text);border-radius:10px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer;transition:transform .14s ease, background var(--tr), color var(--tr)}
+    .icon-btn{
+      border:1px solid var(--card-b);background:var(--chip);color:var(--text);
+      border-radius:10px;width:38px;height:38px;display:grid;place-items:center;cursor:pointer;
+      transition:transform .14s ease, background var(--tr), color var(--tr)
+    }
     .icon-btn:hover{transform:translateY(-1px)}
     .icon-btn svg{width:18px;height:18px}
+
     .content{padding:16px;display:grid;gap:12px}
     .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
     .mini{background:var(--soft);border:1px solid var(--card-b);border-radius:var(--r-lg);padding:10px 12px}
     .mini .k{font-size:11px;color:var(--muted);margin-bottom:4px}
     .mini .v{font-size:22px;font-weight:900;line-height:1.25}
     .mini .u{font-size:11px;color:var(--muted)}
-    .final{border:1px solid #22c55e66;background:linear-gradient(135deg,#052e16,#14532d);color:#ecfccb;border-radius:var(--r-lg);padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;transition:filter var(--tr), opacity var(--tr)}
-    .final .k{font-size:12px;color:#bbf7d0}
-    .final .v{font-size:30px;font-weight:900}
+
+    .final{
+      border:1px solid #22c55e44;background:var(--final-bg);color:var(--final-text);
+      border-radius:var(--r-lg);padding:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;
+      transition:filter var(--tr), opacity var(--tr)
+    }
+    .final .k{font-size:12px;color:var(--final-k)}
+    .final .v{font-size:30px;font-weight:900;line-height:1.1}
+
+    .amountbox{
+      border:1px solid var(--amountbox-b);background:var(--amountbox-bg);color:var(--amountbox-text);
+      border-radius:12px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;
+    }
+    .amountbox .label{font-size:12px;opacity:.9}
+    .amountbox .num{font-size:18px;font-weight:900;direction:ltr;unicode-bidi:plaintext;word-break:break-word}
+
     .valid{border:1px solid #ef444466;border-radius:var(--r-md);padding:10px;background:color-mix(in srgb, var(--bar-bg) 40%, transparent)}
-    .valid-top{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#fecaca;margin-bottom:8px}
-    .bar{height:8px;border-radius:999px;overflow:hidden;background:var(--bar-bg);border:1px solid #7f1d1d}
-    .bar > span{display:block;height:100%;width:100%;background:linear-gradient(90deg,var(--bar-fill1),var(--bar-fill2));transition:width 1s linear}
-    .meta{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;border:1px solid var(--card-b);border-radius:var(--r-md);padding:10px;background:var(--soft)}
-    .err{display:none;font-size:12px;color:#fecaca;background:#7f1d1d2b;border:1px solid #ef444466;border-radius:10px;padding:10px}
+    .valid-top{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#b91c1c;margin-bottom:8px;flex-wrap:wrap}
+    .bar{height:8px;border-radius:999px;overflow:hidden;background:var(--bar-bg);border:1px solid #fecaca}
+    .bar > span{
+      display:block;height:100%;width:100%;
+      background:linear-gradient(90deg,var(--bar-fill1),var(--bar-fill2));
+      transition:width 1s linear;
+    }
+
+    .meta{
+      font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;
+      border:1px solid var(--card-b);border-radius:var(--r-md);padding:10px;background:var(--soft)
+    }
+
+    .err{display:none;font-size:12px;color:#b91c1c;background:#fee2e2;border:1px solid #fecaca;border-radius:10px;padding:10px}
     .err.show{display:block}
-    .pay{width:100%;border:none;border-radius:12px;padding:13px 14px;font-size:15px;font-weight:900;color:var(--btn-text);background:linear-gradient(180deg,var(--pay-bg1),var(--pay-bg2));box-shadow:0 10px 24px rgba(34,197,94,.30);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .14s ease, filter .14s ease, opacity var(--tr), background var(--tr), color var(--tr)}
-    .pay:hover{transform:translateY(-1px)}
-    .pay[aria-disabled="true"]{pointer-events:none;background:var(--expired);color:var(--expired-text);box-shadow:none;opacity:.9}
+
+    .cardbox{
+      border:1px solid var(--cardbox-b);background:var(--cardbox-bg);color:var(--cardbox-text);
+      border-radius:12px;padding:10px 12px;
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    }
+
+    .card-info{min-width:0;display:grid;gap:6px}
+    .cardbox .label{font-size:12px;opacity:.9}
+    .owner{
+      font-size:13px;font-weight:800;opacity:.95;
+      background:var(--tap-bg);border:1px dashed var(--cardbox-b);
+      padding:6px 10px;border-radius:10px;display:inline-flex;align-items:center;gap:6px;
+      width:fit-content;
+    }
+    .cardbox .num{
+      font-size:20px;font-weight:900;letter-spacing:1px;direction:ltr;unicode-bidi:plaintext;
+      white-space:nowrap;
+    }
+
+    .card-tap{
+      cursor:pointer;user-select:none;
+      padding:8px 10px;border-radius:10px;
+      transition:background .18s ease, transform .12s ease;
+      border:1px dashed transparent;
+      width:fit-content;max-width:100%;
+    }
+    .card-tap:hover{transform:translateY(-1px)}
+    .card-tap:active{transform:scale(.99)}
+    .card-tap.hint{border-color:var(--cardbox-b);background:var(--tap-bg)}
+
+    .copy-btn{
+      border:none;border-radius:10px;padding:8px 12px;cursor:pointer;
+      background:var(--copy-bg);color:var(--copy-text);font-weight:800;font-size:12px;
+      transition:transform .14s ease, background .14s ease, opacity .2s ease;
+      min-height:38px;
+    }
+    .copy-btn:hover{transform:translateY(-1px);background:var(--copy-bg-hover)}
+
     .skeleton{position:relative;color:transparent !important;user-select:none}
-    .skeleton::after{content:"";position:absolute;inset:0;border-radius:8px;background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,.08) 35%, transparent 70%), var(--sk);background-size:220% 100%, 100% 100%;animation:shimmer 1.2s linear infinite}
+    .skeleton::after{
+      content:"";position:absolute;inset:0;border-radius:8px;
+      background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,.35) 35%, transparent 70%), var(--sk);
+      background-size:220% 100%, 100% 100%;animation:shimmer 1.2s linear infinite
+    }
     @keyframes shimmer{from{background-position:220% 0,0 0}to{background-position:-20% 0,0 0}}
+
     .footer{text-align:center;font-size:11px;color:var(--muted);padding-top:2px}
-    #confetti{position:fixed;inset:0;pointer-events:none;z-index:9999}
-    @media (max-width:640px){.row{grid-template-columns:1fr}.final .v{font-size:24px}.title h1{font-size:18px}}
+
+    .sticky-paybar{ display:none; }
+
+    @media (max-width: 640px){
+      body{padding:10px;align-items:flex-start}
+      .wrap{max-width:100%}
+      .card{border-radius:16px}
+      .top{padding:12px}
+      .title h1{font-size:18px}
+      .title p{font-size:11px}
+      .icon-btn{width:36px;height:36px}
+      .content{padding:12px;gap:10px;padding-bottom:84px;}
+      .row{grid-template-columns:1fr}
+      .mini .v{font-size:20px}
+      .final{padding:10px;flex-direction:column;align-items:flex-start}
+      .final .v{font-size:24px}
+      .amountbox,.cardbox,.meta,.valid{padding:10px}
+      .amountbox .num{font-size:17px}
+      .cardbox .num{font-size:18px;letter-spacing:.8px}
+      .copy-btn{width:100%;justify-content:center}
+      .card-tap{width:100%}
+
+      .sticky-paybar{
+        position:fixed;left:0;right:0;bottom:0;z-index:999;
+        display:grid;grid-template-columns:1fr;gap:8px;
+        padding:10px calc(10px + env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left));
+        background:var(--sticky-bg);
+        border-top:1px solid var(--sticky-border);
+        backdrop-filter:blur(8px);
+      }
+      .sticky-paybar .copy-btn{width:100%;margin:0;min-height:46px;font-size:14px}
+    }
+
+    @media (max-width: 380px){
+      .title h1{font-size:16px}
+      .mini .v{font-size:18px}
+      .final .v{font-size:21px}
+      .cardbox .num{font-size:16px;letter-spacing:.5px}
+      .amountbox .num{font-size:16px}
+    }
   </style>
 </head>
 <body>
-  <canvas id="confetti"></canvas>
-
   <main class="wrap">
     <section class="card" id="captureArea">
       <header class="top">
@@ -109,9 +257,17 @@
           <div id="finalAmount" class="v skeleton">000000</div>
         </section>
 
+        <section class="amountbox">
+          <div>
+            <div class="label">کپی مبلغ نهایی (ریال)</div>
+            <div id="copyableAmount" class="num">—</div>
+          </div>
+          <button id="copyAmountBtn" class="copy-btn" type="button">کپی مبلغ</button>
+        </section>
+
         <section class="valid">
           <div class="valid-top">
-            <span>اعتبار نرخ تا آپدیت بعدی (UTC 00:00)</span>
+            <span>اعتبار نرخ امروز (تایم ایران: 00:00 تا 00:00)</span>
             <span id="countdownText">—</span>
           </div>
           <div class="bar"><span id="countdownBar"></span></div>
@@ -124,39 +280,90 @@
 
         <div id="errorBox" class="err"></div>
 
-        <a id="payBtn" class="pay" href="https://zarinp.al/YOUR_LINK_HERE" target="_blank" rel="noopener">
-          پرداخت با زرین‌پال
-        </a>
+        <section class="cardbox">
+          <div class="card-info">
+            <div class="label">شماره کارت بلوبانک (کارت‌به‌کارت)</div>
+            <div class="owner">👤 سیدمحمدمهدی کشاورز</div>
+            <div id="cardTapArea" class="card-tap hint" title="برای کپی شماره کارت تپ کنید">
+              <div id="cardNumber" class="num">6219861981093916</div>
+            </div>
+          </div>
+          <button id="copyCardBtn" class="copy-btn" type="button">کپی شماره کارت</button>
+        </section>
 
-        <div class="footer">اگر زمان اعتبار تمام شود، پرداخت موقتاً غیرفعال می‌شود.</div>
+        <div class="footer">فعلاً پرداخت فقط از طریق کارت‌به‌کارت انجام می‌شود.</div>
       </div>
     </section>
   </main>
 
+  <div class="sticky-paybar" id="stickyPaybar">
+    <button id="copyAmountBtnSticky" class="copy-btn" type="button">کپی مبلغ</button>
+  </div>
+
   <script>
     const DEFAULT_FIXED_USD = 25;
+    const IRAN_TZ = 'Asia/Tehran';
+    const DAY_MS = 24 * 60 * 60 * 1000;
 
     const usdAmountEl = document.getElementById('usdAmount');
     const usdRateEl = document.getElementById('usdRate');
     const finalAmountEl = document.getElementById('finalAmount');
+    const copyableAmountEl = document.getElementById('copyableAmount');
+    const copyAmountBtnEl = document.getElementById('copyAmountBtn');
+    const copyAmountBtnStickyEl = document.getElementById('copyAmountBtnSticky');
+
     const updatedAtEl = document.getElementById('updatedAt');
     const sourceNameEl = document.getElementById('sourceName');
     const countdownTextEl = document.getElementById('countdownText');
     const countdownBarEl = document.getElementById('countdownBar');
     const errorBoxEl = document.getElementById('errorBox');
     const themeToggleEl = document.getElementById('themeToggle');
-    const payBtnEl = document.getElementById('payBtn');
+
     const pngBtnEl = document.getElementById('pngBtn');
     const captureAreaEl = document.getElementById('captureArea');
+    const copyCardBtnEl = document.getElementById('copyCardBtn');
+    const cardNumberEl = document.getElementById('cardNumber');
+    const cardTapAreaEl = document.getElementById('cardTapArea');
 
     const nf = new Intl.NumberFormat('fa-IR');
     const fmt = n => nf.format(Math.floor(n || 0));
 
-    let updateBaseMs = null;
-    let nextUpdateMs = null;
+    let dayStartMs = null;
+    let dayEndMs = null;
     let countdownTimer = null;
-    let isExpired = false;
     let fixedUsd = DEFAULT_FIXED_USD;
+    let currentFinalIrr = 0;
+
+    function formatCardNumber(raw){
+      const digits = String(raw || '').replace(/\D/g, '').slice(0,16);
+      return digits.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+    }
+
+    function getRawCardNumber(){
+      return (cardNumberEl.textContent || '').replace(/\D/g,'').slice(0,16);
+    }
+
+    async function copyCardRaw(){
+      const card = getRawCardNumber();
+      if(!card || card.length < 16){
+        showError('شماره کارت نامعتبر است.');
+        return;
+      }
+      try{
+        await navigator.clipboard.writeText(card);
+        const oldBtn = copyCardBtnEl.textContent;
+        copyCardBtnEl.textContent = 'کپی شد ✅';
+        cardTapAreaEl.style.outline = '2px solid #22c55e88';
+        setTimeout(() => {
+          copyCardBtnEl.textContent = oldBtn;
+          cardTapAreaEl.style.outline = '';
+        }, 1200);
+      }catch(_){
+        const oldBtn = copyCardBtnEl.textContent;
+        copyCardBtnEl.textContent = 'کپی نشد ❌';
+        setTimeout(() => copyCardBtnEl.textContent = oldBtn, 1200);
+      }
+    }
 
     function applyTheme(theme){
       document.documentElement.setAttribute('data-theme', theme);
@@ -165,7 +372,7 @@
 
     function initTheme(){
       const saved = localStorage.getItem('theme');
-      applyTheme(saved === 'light' || saved === 'dark' ? saved : 'dark');
+      applyTheme(saved === 'light' || saved === 'dark' ? saved : 'light');
     }
 
     themeToggleEl.addEventListener('click', () => {
@@ -173,34 +380,11 @@
       applyTheme(now === 'dark' ? 'light' : 'dark');
     });
 
-    function showError(msg){
-      errorBoxEl.textContent = msg;
-      errorBoxEl.classList.add('show');
-    }
+    function showError(msg){ errorBoxEl.textContent = msg; errorBoxEl.classList.add('show'); }
+    function hideError(){ errorBoxEl.classList.remove('show'); errorBoxEl.textContent = ''; }
+    function setLoading(on){ [usdRateEl, finalAmountEl].forEach(el => el.classList.toggle('skeleton', on)); }
 
-    function hideError(){
-      errorBoxEl.classList.remove('show');
-      errorBoxEl.textContent = '';
-    }
-
-    function setLoading(on){
-      [usdRateEl, finalAmountEl].forEach(el => el.classList.toggle('skeleton', on));
-    }
-
-    function setExpiredState(expired){
-      isExpired = expired;
-      if(expired){
-        payBtnEl.setAttribute('aria-disabled','true');
-        payBtnEl.textContent = 'اعتبار نرخ تمام شده';
-      }else{
-        payBtnEl.setAttribute('aria-disabled','false');
-        payBtnEl.textContent = 'پرداخت با زرین‌پال';
-      }
-    }
-
-    function calcSmartFinal(exact){
-      return Math.floor(exact / 10000) * 10000 + 900;
-    }
+    function calcSmartFinal(exact){ return Math.floor(exact / 10000) * 10000 + 900; }
 
     function parseUpdatedAt(str){
       if(!str || typeof str !== 'string') return null;
@@ -212,42 +396,76 @@
       return Number.isNaN(ms) ? null : ms;
     }
 
-    function getNextUtcMidnight(ms){
-      const d = new Date(ms);
-      const y = d.getUTCFullYear();
-      const m = d.getUTCMonth();
-      const day = d.getUTCDate();
-      return Date.UTC(y, m, day + 1, 0, 0, 0, 0);
+    // ---- Time helpers for Iran day cycle (00:00 -> 00:00) ----
+    function getTehranYMDParts(ms){
+      const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: IRAN_TZ, year:'numeric', month:'2-digit', day:'2-digit'
+      }).formatToParts(new Date(ms));
+
+      const y = Number(parts.find(p=>p.type==='year')?.value);
+      const m = Number(parts.find(p=>p.type==='month')?.value);
+      const d = Number(parts.find(p=>p.type==='day')?.value);
+      return { y, m, d };
+    }
+
+    function tehranMidnightUtcMsFromYMD(y,m,d){
+      // guess UTC then iterate to exact Tehran local date 00:00
+      let t = Date.UTC(y, m-1, d, 0, 0, 0, 0);
+      for(let i=0;i<6;i++){
+        const dt = new Date(t);
+        const local = new Date(dt.toLocaleString('en-US', { timeZone: IRAN_TZ }));
+        const offset = local.getTime() - t;
+
+        // UTC moment that corresponds to Tehran 00:00 of that local day
+        const candidate = Date.UTC(y, m-1, d, 0, 0, 0, 0) - offset;
+        if (Math.abs(candidate - t) < 1) return candidate;
+        t = candidate;
+      }
+      return t;
+    }
+
+    function getIranDayRange(ms){
+      const { y, m, d } = getTehranYMDParts(ms);
+      const start = tehranMidnightUtcMsFromYMD(y, m, d);
+
+      const nextDate = new Date(Date.UTC(y, m-1, d) + DAY_MS);
+      const ny = nextDate.getUTCFullYear();
+      const nm = nextDate.getUTCMonth() + 1;
+      const nd = nextDate.getUTCDate();
+      const end = tehranMidnightUtcMsFromYMD(ny, nm, nd);
+
+      return { start, end };
     }
 
     function startCountdown(){
       if(countdownTimer) clearInterval(countdownTimer);
 
       const tick = () => {
-        if(!updateBaseMs || !nextUpdateMs || nextUpdateMs <= updateBaseMs){
-          countdownTextEl.textContent = 'نامشخص';
-          countdownBarEl.style.width = '100%';
-          setExpiredState(false);
-          return;
+        const now = Date.now();
+
+        // اگر از بازه خارج شدیم (مثلاً نیمه‌شب ایران رد شد) بازه جدید بساز
+        if(!dayStartMs || !dayEndMs || now >= dayEndMs || now < dayStartMs){
+          const r = getIranDayRange(now);
+          dayStartMs = r.start;
+          dayEndMs = r.end;
         }
 
-        const now = Date.now();
-        const total = nextUpdateMs - updateBaseMs;
-        const remain = Math.max(0, nextUpdateMs - now);
-        const percent = Math.max(0, Math.min(100, (remain / total) * 100));
-        countdownBarEl.style.width = percent + '%';
+        const total = Math.max(1, dayEndMs - dayStartMs);
+        const elapsed = Math.max(0, now - dayStartMs);
+        const remain = Math.max(0, dayEndMs - now);
+
+        const percentLeft = Math.max(0, Math.min(100, (remain / total) * 100));
+        countdownBarEl.style.width = percentLeft + '%';
 
         if(remain <= 0){
-          countdownTextEl.textContent = 'منقضی شده';
-          setExpiredState(true);
+          countdownTextEl.textContent = '۰۰:۰۰:۰۰';
           return;
         }
 
         const hh = Math.floor(remain / 3600000);
         const mm = Math.floor((remain % 3600000) / 60000);
         const ss = Math.floor((remain % 60000) / 1000);
-        countdownTextEl.textContent = `${fmt(hh)}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')} (ساعت:دقیقه:ثانیه)`;
-        setExpiredState(false);
+        countdownTextEl.textContent = `${fmt(hh)}:${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
       };
 
       tick();
@@ -257,23 +475,18 @@
     async function loadConfig(){
       try{
         const res = await fetch('./data/config.json?ts=' + Date.now(), { cache:'no-store' });
-        if(!res.ok) throw new Error('خطا در دریافت config.json');
+        if(!res.ok) throw new Error();
         const cfg = await res.json();
         const v = Number(cfg.fixed_usd || DEFAULT_FIXED_USD);
         fixedUsd = v > 0 ? v : DEFAULT_FIXED_USD;
-      }catch(_){
-        fixedUsd = DEFAULT_FIXED_USD;
-      }
+      }catch(_){ fixedUsd = DEFAULT_FIXED_USD; }
       usdAmountEl.textContent = fmt(fixedUsd);
     }
 
     async function loadRate(){
-      setLoading(true);
-      hideError();
-
+      setLoading(true); hideError();
       try{
         await loadConfig();
-
         const res = await fetch('./data/rate.json?ts=' + Date.now(), { cache:'no-store' });
         if(!res.ok) throw new Error('خطا در دریافت rate.json');
         const data = await res.json();
@@ -281,92 +494,69 @@
         const rate = Number(data.usd_irr || 0);
         if(rate <= 0) throw new Error('نرخ نامعتبر است');
 
-        const exact = rate * fixedUsd;
-        const final = calcSmartFinal(exact);
+        const final = calcSmartFinal(rate * fixedUsd);
+        currentFinalIrr = final;
 
         usdRateEl.textContent = fmt(rate);
         finalAmountEl.textContent = fmt(final) + ' ریال';
+        copyableAmountEl.textContent = fmt(final);
 
         updatedAtEl.textContent = data.updated_at || 'نامشخص';
         sourceNameEl.textContent = data.source || 'TGJU';
 
-        updateBaseMs = parseUpdatedAt(data.updated_at) || Date.now();
-        nextUpdateMs = getNextUtcMidnight(updateBaseMs);
-
+        // شمارشگر مستقل از updated_at، فقط بر اساس روز ایران
+        const now = Date.now();
+        const r = getIranDayRange(now);
+        dayStartMs = r.start;
+        dayEndMs = r.end;
         startCountdown();
       }catch(err){
         console.error(err);
         showError('دریافت نرخ با مشکل مواجه شد. لطفاً کمی بعد دوباره تلاش کنید.');
         usdRateEl.textContent = '—';
         finalAmountEl.textContent = 'خطا';
+        copyableAmountEl.textContent = '—';
+        currentFinalIrr = 0;
         updatedAtEl.textContent = 'نامشخص';
         sourceNameEl.textContent = 'TGJU';
 
-        updateBaseMs = Date.now();
-        nextUpdateMs = getNextUtcMidnight(updateBaseMs);
+        const now = Date.now();
+        const r = getIranDayRange(now);
+        dayStartMs = r.start;
+        dayEndMs = r.end;
         startCountdown();
       }finally{
         setLoading(false);
       }
     }
 
-    const confettiCanvas = document.getElementById('confetti');
-    const ctx = confettiCanvas.getContext('2d');
-    let pieces = [], raf = null;
-
-    function resizeCanvas(){
-      confettiCanvas.width = innerWidth;
-      confettiCanvas.height = innerHeight;
-    }
-    addEventListener('resize', resizeCanvas); resizeCanvas();
-
-    function launchConfetti(ms=1400){
-      const colors = ['#22c55e','#38bdf8','#f59e0b','#a78bfa','#ef4444'];
-      pieces = Array.from({length:140}, () => ({
-        x: Math.random()*confettiCanvas.width,
-        y: -20 - Math.random()*140,
-        w: 5 + Math.random()*5,
-        h: 8 + Math.random()*8,
-        vx: -1.8 + Math.random()*3.6,
-        vy: 2 + Math.random()*3,
-        g: 0.05 + Math.random()*0.06,
-        r: Math.random()*Math.PI,
-        vr: -0.2 + Math.random()*0.4,
-        c: colors[Math.floor(Math.random()*colors.length)],
-        a: 1
-      }));
-
-      const start = performance.now();
-      cancelAnimationFrame(raf);
-
-      const frame = t => {
-        const e = t - start;
-        ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
-
-        for(const p of pieces){
-          p.vy += p.g; p.x += p.vx; p.y += p.vy; p.r += p.vr; p.a = Math.max(0, 1 - e/ms);
-          ctx.save();
-          ctx.globalAlpha = p.a;
-          ctx.translate(p.x,p.y);
-          ctx.rotate(p.r);
-          ctx.fillStyle = p.c;
-          ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
-          ctx.restore();
-        }
-
-        if(e < ms) raf = requestAnimationFrame(frame);
-        else ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
-      };
-      raf = requestAnimationFrame(frame);
+    function initCardFormat(){
+      const raw = (cardNumberEl.textContent || '').trim();
+      cardNumberEl.textContent = formatCardNumber(raw);
     }
 
-    payBtnEl.addEventListener('click', (e) => {
-      if(isExpired){
-        e.preventDefault();
+    copyCardBtnEl.addEventListener('click', copyCardRaw);
+    cardTapAreaEl.addEventListener('click', copyCardRaw);
+
+    async function copyAmountRaw(btnRef){
+      if(!currentFinalIrr || currentFinalIrr <= 0){
+        showError('هنوز مبلغ نهایی آماده نیست.');
         return;
       }
-      launchConfetti();
-    });
+      try{
+        await navigator.clipboard.writeText(String(currentFinalIrr));
+        const old = btnRef.textContent;
+        btnRef.textContent = 'مبلغ کپی شد ✅';
+        setTimeout(() => btnRef.textContent = old, 1200);
+      }catch(_){
+        const old = btnRef.textContent;
+        btnRef.textContent = 'کپی نشد ❌';
+        setTimeout(() => btnRef.textContent = old, 1200);
+      }
+    }
+
+    copyAmountBtnEl.addEventListener('click', () => copyAmountRaw(copyAmountBtnEl));
+    copyAmountBtnStickyEl.addEventListener('click', () => copyAmountRaw(copyAmountBtnStickyEl));
 
     pngBtnEl.addEventListener('click', () => {
       const w = captureAreaEl.offsetWidth;
@@ -383,8 +573,7 @@
       img.onload = () => {
         const c = document.createElement('canvas');
         c.width = w*2; c.height = h*2;
-        const x = c.getContext('2d');
-        x.drawImage(img,0,0);
+        c.getContext('2d').drawImage(img,0,0);
         URL.revokeObjectURL(url);
         const a = document.createElement('a');
         a.href = c.toDataURL('image/png');
@@ -396,7 +585,7 @@
     });
 
     initTheme();
-    setExpiredState(false);
+    initCardFormat();
     loadRate();
   </script>
 </body>
