@@ -1,0 +1,36 @@
+name: Update USD Price Daily
+
+on:
+  schedule:
+    # ساعت 20:30 UTC که میشه 00:00 بامداد به وقت تهران
+    - cron: '30 20 * * *'
+  workflow_dispatch: # این خط همون دکمه‌ایه که گفتم برای تست دستی بهت میده!
+
+jobs:
+  update-price:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Run scraping script
+      run: python update_price.py
+
+    - name: Commit and push if changed
+      run: |
+        git config --global user.name "GitHub Action Bot"
+        git config --global user.email "action@github.com"
+        git add data.json
+        # اگه قیمت فرقی نکرده باشه، ارور نمیده و با آرامش ازش رد میشه
+        git commit -m "🤖 آپدیت خودکار قیمت دلار از TGJU" || exit 0
+        git push
