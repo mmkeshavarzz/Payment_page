@@ -4,30 +4,42 @@ import json
 import os
 from datetime import timezone, timedelta
 import jdatetime
+import re
+
 
 DATA_FILE = 'data.json'
 
 def fetch_usd_price():
-    url = "https://api.tabdeal.org/r/plots/currency/prices"
-    # هدرها برای اینکه سایت فکر کنه ما یک انسان واقعی با مرورگر هستیم!
+    url = "https://isignal.ir/gold-currency/usdollar/"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-        "Accept-Language": "fa-IR,fa;q=0.9,en-US;q=0.8,en;q=0.7"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept-Language": "fa-IR,fa;q=0.9,en;q=0.8"
     }
     try:
         response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
-        # گشتن دنبال تگ قیمت دلار تو سایت صرافی تبدیل
-        data = response.json()
-
-        price_toman = float(data.get("USDT_IRT", {}).get("price", 0))
-        if price_toman > 0:
+        
+        # تبدیل اعداد فارسی احتمالی به انگلیسی برای جلوگیری از خطای عددی
+        raw_html = response.text
+        for fa_digit, en_digit in zip("۰۱۲۳۴۵۶۷۸۹", "0123456789"):
+            raw_html = raw_html.replace(fa_digit, en_digit)
             
-            # تبدیل تومان به ریال تر و تمیز
-            return int(price_toman * 10)
+        soup = BeautifulSoup(raw_html, 'html.parser')
+        text = soup.get_text()
+
+        # شکار قیمت رسمی ثبت‌شده در متن صفحه (مثلاً: ۲,۳۴۰,۰۰۰ ریال)
+        match = re.search(r'هر واحد دلار با قیمت\s*([\d,]+)\s*ریال', text)
+        if not match:
+            # الگوی جایگزین در صورت تغییرات نگارشی صفحه
+            match = re.search(r'([\d,]{7,10})\s*ریال', text)
+
+        if match:
+            clean_price = match.group(1).replace(',', '').strip()
+            return int(clean_price)
+            
         return None
     except Exception as e:
-        print(f"ارور در دریافت قیمت از صرافی تبدیل: {e}")
+        print(f"ارور در دریافت قیمت از سیگنال: {e}")
         return None
 
 
@@ -51,7 +63,7 @@ def main():
         # 📅 قالب‌بندی به تاریخ زیبای شمسی و ساعت تهران
         data['last_updated'] = now_in_tehran.strftime('%Y/%m/%d - %H:%M')
 
-        data['source'] = 'تبدیل (Tabdeal)'
+        data['source'] = 'سیگنال (Signal)'
         
         with open(DATA_FILE, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
